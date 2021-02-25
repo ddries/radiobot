@@ -268,7 +268,7 @@ core.init(() => {
         } else {
             if (newState.member.voice) {
                 if (newState.member.voice.channelID == core.getServerChannel(newState.guild.id)) {
-                    if (newState.channel.members.array().length > 0 && oldState.channel && oldState.channel.members.array().length <= 0 && !core.isServerDisconnected(newState.guild.id)) {
+                    if (newState.channel.members.array().length == 2 && !core.isServerDisconnected(newState.guild.id)) {
                         core.startLoopPlay(newState.channel, false, false);
                     }
                 }

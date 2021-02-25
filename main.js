@@ -266,16 +266,18 @@ core.init(() => {
                 core.logs.log("ERROR! At voiceStatusUpdate... " + e, "DISCORD", core.logs.LogFile.ERROR_LOG);
             }
         } else {
-            if (newState.member.voice) {
-                if (newState.member.voice.channelID == core.getServerChannel(newState.guild.id)) {
-                    if (newState.channel.members.array().length == 2 && !core.isServerDisconnected(newState.guild.id)) {
-                        core.startLoopPlay(newState.channel, false, false);
+            if (newState.member.voice.channelID != oldState.member.voice.channelID) {
+                if (newState.member.voice) {
+                    if (newState.member.voice.channelID == core.getServerChannel(newState.guild.id)) {
+                        if (newState.channel.members.array().length == 2 && !core.isServerDisconnected(newState.guild.id)) {
+                            core.startLoopPlay(newState.channel, false, false);
+                        }
                     }
                 }
-            }
-
-            if (oldState.member.voice && oldState.channel && oldState.channel.members.array().length == 1 && oldState.channel.members.array()[0].id == client.user.id) {
-                core.stopPlayingCurrentSong(oldState.guild.id);
+    
+                if (oldState.member.voice && oldState.channel && oldState.channel.members.array().length == 1 && oldState.channel.members.array()[0].id == client.user.id) {
+                    core.stopPlayingCurrentSong(oldState.guild.id);
+                }
             }
         }
     });

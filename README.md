@@ -3,6 +3,8 @@
 
 RadioBot is the best Discord bot made with Javascript and Discord.js that joins your server and sticks on your preferred channel to play 24/7 the song you choose. You will not find a better and free alternative to RadioBot.
 
+[Get RadioBot now.](https://theradiobot.com/join "Get RadioBot now.")
+
 ### Features
 
 - Play your favourite songs without delay, without lag, smoothly, in your Discord server non-stop.

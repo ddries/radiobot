@@ -266,9 +266,9 @@ core.init(() => {
                 core.logs.log("ERROR! At voiceStatusUpdate... " + e, "DISCORD", core.logs.LogFile.ERROR_LOG);
             }
         } else {
-            if (newState.member.voice.channelID != oldState.member.voice.channelID) {
+            if (newState.channelID != oldState.channelID) {
                 if (newState.member.voice) {
-                    if (newState.member.voice.channelID == core.getServerChannel(newState.guild.id)) {
+                    if (newState.channelID == core.getServerChannel(newState.guild.id)) {
                         if (newState.channel.members.array().length == 2 && !core.isServerDisconnected(newState.guild.id)) {
                             core.startLoopPlay(newState.channel, false, false);
                         }

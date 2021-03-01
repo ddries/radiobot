@@ -37,6 +37,8 @@ module.exports = {
 
             core.removeSongFromServer(song, m.guild.id);
 
+            core.totalSongs--;
+
             core.discord.notify(core.discord.NotifyType.Success, m.channel, {
                 title: name,
                 url: url,
@@ -75,6 +77,8 @@ module.exports = {
                             description: "The song **" + name + "** has been removed from **" + m.guild.name + "**"
                         });
     
+                        core.totalSongs--;
+
                         core.logs.log("Removed song (ID) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
 
                         if (ni >= 0 && core.getServerSongs(m.guild.id).length > 0) {

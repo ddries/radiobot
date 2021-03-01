@@ -61,6 +61,8 @@ function addSongProcess(m) {
                                                 core.discord.sendWebhook(m.author.username + " (" + m.author.id + ") just used a **PACK 0**");
                                                 core.addSongToServer([songName, songUrl], m.guild.id, body.videoId, true);
             
+                                                core.totalSongs++;
+
                                                 core.discord.notify(core.discord.NotifyType.Success, m.channel, {
                                                     description: "Your song **" + songName + "** has been added to " + m.guild.name + "! You can play it with **" + core.discord.DISCORD_PREFIX + "song**.",
                                                     title: songName,
@@ -85,6 +87,8 @@ function addSongProcess(m) {
                                 } else {
                                     core.addSongToServer([songName, songUrl], m.guild.id, body.videoId, true);
             
+                                    core.totalSongs++;
+
                                     core.discord.notify(core.discord.NotifyType.Success, m.channel, {
                                         description: "Your song **" + songName + "** has been added to " + m.guild.name + "! You can play it with **" + core.discord.DISCORD_PREFIX + "song**.",
                                         title: songName,

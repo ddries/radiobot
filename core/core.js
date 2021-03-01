@@ -44,12 +44,14 @@ var userPacks = {};
 // serverid -> max songs
 var serverMaxSongs = {};
 
+var totalSongs = 0;
+
 var numbers = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
 
 const MAX_SERVER_SONGS = 10;
 const CACHE_PATH = "cache/";
 var TECH_DIF = false;
-const API_WRAPPER_URL = config.api_url;
+var API_WRAPPER_URL = config.api_url;
 var CLIENT_ID = "";
 
 async function init(callback) {
@@ -366,7 +368,7 @@ function leaveVoiceChannel(serverid, clearPlayingSong=true) {
 function buildSongList(guild, discord) {
     let embed = new discord.MessageEmbed()
         .setColor("#fc9c1e")
-        .setTitle(guild.name + " song list:")
+        .setTitle(guild.name + " song list (" + getServerSongs(guild.id).length + "/" + getServerMaxSongs(guild.id) + "):")
         .setFooter('RadioBot')
         .setTimestamp();
     
@@ -791,11 +793,13 @@ module.exports = {
     setClientId: setClientId,
     stopPlayingCurrentSong: stopPlayingCurrentSong,
 
+    totalSongs: totalSongs,
+
     numbers: numbers,
     MAX_SERVER_SONGS: MAX_SERVER_SONGS,
     TECH_DIF: TECH_DIF,
     CACHE_PATH: CACHE_PATH,
-    YOUTUBE_DEFAULT_HEADERS: YOUTUBE_DEFAULT_HEADERS,
+    //YOUTUBE_DEFAULT_HEADERS: YOUTUBE_DEFAULT_HEADERS,
     API_WRAPPER_URL: API_WRAPPER_URL,
 
     init: init

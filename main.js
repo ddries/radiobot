@@ -24,6 +24,8 @@ core.init(() => {
                 core.addSongById(song.id, [song.id, song.name, song.url]);
                 core.setVideoId(song.id, song.video_id, false);
 
+                core.totalSongs++;
+
                 core.logs.log("Added song " + JSON.stringify([song.id, song.name, song.url]) + " to server " + song.serverid, "LOAD", core.logs.LogFile.LOAD_LOG);
             }
 
@@ -99,7 +101,7 @@ core.init(() => {
             core.discord.noticeOnline();
         }
         client.setInterval(() => {
-            core.discord.setActivity(client, core.discord.DISCORD_PREFIX + "help | " + client.guilds.cache.array().length + " servers");
+            core.discord.setActivity(client, core.discord.DISCORD_PREFIX + "help | " + client.guilds.cache.array().length + " servers | " + core.totalSongs + " songs");
         }, 7200);
         if (!DEBUG) {
             client.setTimeout(() => {

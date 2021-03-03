@@ -26,10 +26,14 @@ module.exports = {
 
         core.setCurrentlyPlayingSongInServer(m.guild.id, song, true);
 
+        let text = song[1];
+        if (core.getQueue(m.guild.id) != -1) {
+            text += " | *Song queue is " + (core.getQueue(m.guild.id) ? "enabled" : "disabled") + " (" + core.discord.DISCORD_PREFIX + "queue)*";
+        }
         core.discord.notify(core.discord.NotifyType.Info, m.channel, {
             title: "Playing in " + m.guild.name + ":",
             url: song[2],
-            description: song[1] + " | *Song queue is " + (core.getQueue(m.guild.id) ? "enabled" : "disabled") + " (" + core.discord.DISCORD_PREFIX + "queue)*"
+            description: text
         });
 
         core.logs.log("Changed song playing from " + m.guild.id + " to (ID) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);

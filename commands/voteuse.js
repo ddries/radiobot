@@ -32,6 +32,9 @@ module.exports = {
                 case 1:
                     votesNeeded = 5;
                     break;
+                case 2:
+                    votesNeeded = 2;
+                    break;
             }
 
             if (votesNeeded <= 0) {

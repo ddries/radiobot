@@ -74,9 +74,9 @@ core.init(() => {
                         } else {
                             core.setQueue(server, false, false);    
                         }
-                    } else {
+                    } /* else {
                         core.setQueue(server, false, false);
-                    }
+                    } */
                 });
             }
 

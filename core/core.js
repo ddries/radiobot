@@ -270,7 +270,7 @@ async function startLoopPlay(channel, refresh, songCommand) {
     let songUrl = "";
     let song = [];
 
-    if (getQueue(channel.guild.id) && !songCommand) {
+    if (getQueue(channel.guild.id) != -1 && getQueue(channel.guild.id) && !songCommand) {
         if (getServerSongs(channel.guild.id).length > 0) {
             let nextSongId = getNextSongId(channel.guild.id);
             if (nextSongId > -1) {
@@ -495,7 +495,8 @@ function setQueue(serverid, queue, saveToDb=true) {
 
 function getQueue(serverid) {
     if (!serverQueues.hasOwnProperty(serverid)) {
-        serverQueues[serverid] = false;
+        return -1;
+        //serverQueues[serverid] = false;
     }
 
     return serverQueues[serverid];

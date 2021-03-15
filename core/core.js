@@ -372,26 +372,71 @@ function buildSongList(guild, discord) {
         .setFooter('RadioBot')
         .setTimestamp();
     
+    let embeds = [];
+
     let serverSongs = getServerSongs(guild.id);
-    for (let i = 0; i < serverSongs.length; i++) {
-        if (i < 10)
-            embed.addField("Song " + numbers[i], serverSongs[i][1]);
-        else {
-            let digits = [];
-            let istr = i.toString();
-            for (let j = 0, len = istr.length; j < len; j++) {
-                digits.push(+istr.charAt(j));
+    if (serverSongs.length <= 25) {
+        for (let i = 0; i < serverSongs.length; i++) {
+            console.log(i);
+            console.log(serverSongs[i]);
+            if (i < 10)
+                embed.addField("Song " + numbers[i], serverSongs[i][1]);
+            else {
+                let digits = [];
+                let istr = i.toString();
+                for (let j = 0, len = istr.length; j < len; j++) {
+                    digits.push(+istr.charAt(j));
+                }
+    
+                let numbersEmoji = "";
+                for (let d of digits) {
+                    numbersEmoji += numbers[d];
+                }
+                embed.addField("Song " + numbersEmoji, serverSongs[i][1]);
+            }
+        }
+        embeds.push(embed);
+    } else {
+        let n_embeds = Math.ceil(serverSongs.length/25);
+        let n_songs = 25; //Math.ceil(serverSongs.length/n_embeds);
+        console.log("Se generan " + n_embeds + " embeds");
+        console.log(n_songs + " canciones por embed");
+        for (let j = 0; j < n_embeds; j++) {
+            let _embed = new discord.MessageEmbed()
+                .setColor("#fc9c1e")
+                .setFooter('RadioBot') 
+                .setTimestamp();
+            if (j == 0) {
+                _embed.setTitle(guild.name + " song list (" + getServerSongs(guild.id).length + "/" + getServerMaxSongs(guild.id) + "):");
+            }
+            
+            for (let k = 0; k < n_songs && (j*n_songs + k <= serverSongs.length-1); k++) {
+                let i = j*n_songs + k;
+                if (i > serverSongs.length) {
+                    i = serverSongs.length-1;
+                }
+                if (i < 10)
+                    _embed.addField("Song " + numbers[i], serverSongs[i][1]);
+                else {
+                    let digits = [];
+                    let istr = i.toString();
+                    for (let j = 0, len = istr.length; j < len; j++) {
+                        digits.push(+istr.charAt(j));
+                    }
+        
+                    let numbersEmoji = "";
+                    for (let d of digits) {
+                        numbersEmoji += numbers[d];
+                    }
+                    _embed.addField("Song " + numbersEmoji, serverSongs[i][1]);
+                }
             }
 
-            let numbersEmoji = "";
-            for (let d of digits) {
-                numbersEmoji += numbers[d];
-            }
-            embed.addField("Song " + numbersEmoji, serverSongs[i][1]);
+            embeds.push(_embed);
         }
     }
 
-    return embed;
+    return embeds;
 }
 
 function sendSongListAwaitReaction(user, channel, guild, discord, callback) {

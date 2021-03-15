@@ -12,6 +12,9 @@ module.exports = {
             return;
         }
         
-        m.channel.send(core.buildSongList(m.guild, discord));
+        let embeds = core.buildSongList(m.guild, discord);
+        for (let i = 0; i < embeds.length; i++) {
+            m.channel.send(embeds[i]);
+        }
     }
 };

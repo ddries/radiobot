@@ -8,7 +8,7 @@ var web = require('./webserver.js');
 
 const dbl = new DBL(core.config.dbl_token, client);
 
-const DEBUG = false;
+const DEBUG = true;
 
 core.init(() => {
     core.logs.log("Initialized core modules", "LOAD", core.logs.LogFile.LOAD_LOG);

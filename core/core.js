@@ -72,6 +72,7 @@ function addSongToServer(song, server_id, video_id = "", saveToDb=false) {
         let name = song[0].replace(/[\\$'"]/g, "\\$&");
         mysql.queryGetInsertedId(`INSERT INTO song(name, url, serverid) VALUES('${name}', '${song[1]}', ${server_id})`, id => {
             serverSongs[server_id].push([id].concat(song));
+            addSongById(id, [id].concat(song));
             if (video_id.length <= 0 && saveToDb) {
                 logs.log('Trying to get through API INFO ' + song[1], "CORE-addSongToServer", logs.LogFile.DOWNLOAD_LOG);
                 request(API_WRAPPER_URL + "info?f=videoId&u=" + encodeURIComponent(song[1]), (err, resp, body) => {
@@ -377,8 +378,6 @@ function buildSongList(guild, discord) {
     let serverSongs = getServerSongs(guild.id);
     if (serverSongs.length <= 25) {
         for (let i = 0; i < serverSongs.length; i++) {
-            console.log(i);
-            console.log(serverSongs[i]);
             if (i < 10)
                 embed.addField("Song " + numbers[i], serverSongs[i][1]);
             else {
@@ -399,8 +398,6 @@ function buildSongList(guild, discord) {
     } else {
         let n_embeds = Math.ceil(serverSongs.length/25);
         let n_songs = 25; //Math.ceil(serverSongs.length/n_embeds);
-        console.log("Se generan " + n_embeds + " embeds");
-        console.log(n_songs + " canciones por embed");
         for (let j = 0; j < n_embeds; j++) {
             let _embed = new discord.MessageEmbed()
                 .setColor("#fc9c1e")
@@ -552,6 +549,7 @@ function getNextSongId(serverid) {
         serverSongs[serverid] = [];
     }
     let songPlaying = getCurrentlyPlayingSongInServer(serverid);
+
     if (songPlaying.length > 0) {
         let idx = getArrayIndex(serverSongs[serverid], songPlaying);
         if (idx >= 0 && idx < serverSongs[serverid].length-1) {

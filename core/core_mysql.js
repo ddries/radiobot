@@ -54,7 +54,10 @@ function queryGetInsertedId(sql, callback) {
                 if (err)
                     logs.log("ERROR! Executing queryGetInsertedId " + sql + ": " + err, "MYSQL", logs.LogFile.ERROR_LOG);
                 //if (err) throw err;
-                callback(res.insertId);
+                if (res)
+                    callback(res.insertId);
+                else
+                    callback(-1);
             });
         } else {
             throw new Error("WARNING! MYSQL CONNECTION IS NOT CREATED");

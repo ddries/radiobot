@@ -284,6 +284,11 @@ core.init(() => {
         }
     });
 
+    client.on("error", error => {
+        core.logs.log("ERROR! On Error event: " + error, "DISCORD/EVENT", core.logs.LogFile.ERROR_LOG);
+        core.discord.sendAdminWebhook("ERROR! On Error event: " + error);
+    });
+
     let _i = setInterval(() => {
         if (mysqlLoaded) {
             core.logs.log("Loaded all MySQL data", "MYSQL", core.logs.LogFile.MYSQL_LOG);

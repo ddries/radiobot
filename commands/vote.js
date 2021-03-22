@@ -19,11 +19,11 @@ module.exports = {
                 .addFields(
                     {
                         "name": "PACK: 0, COST: 2 votes",
-                        "value": "Add in any server you want a song longer than 10 minutes (but shorter than 20 minutes). [`" + core.discord.DISCORD_PREFIX + "add`]"
+                        "value": "Add in any server you want a song longer than 10 minutes (but shorter than 20 minutes). When you try to add a song longer than 10 minutes, you will be able to use your pack. [`" + core.discord.DISCORD_PREFIX + "add`]"
                     },
                     {
                         "name": "PACK: 1, COST: 5 votes",
-                        "value": "Get another song slot for the server. [`" + core.discord.DISCORD_PREFIX + "add`]"
+                        "value": "Get another song slot for the server. When you try to add a song when there are no more available slots for the server, you will be able to use your pack. [`" + core.discord.DISCORD_PREFIX + "add`]"
                     },
                     {
                         "name": "PACK: 2, COST: 2 votes",

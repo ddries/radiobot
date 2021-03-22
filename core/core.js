@@ -71,20 +71,21 @@ function addSongToServer(song, server_id, video_id = "", saveToDb=false) {
     } else {
         let name = song[0].replace(/[\\$'"]/g, "\\$&");
         mysql.queryGetInsertedId(`INSERT INTO song(name, url, serverid) VALUES('${name}', '${song[1]}', ${server_id})`, id => {
-            serverSongs[server_id].push([id].concat(song));
-            addSongById(id, [id].concat(song));
-            if (video_id.length <= 0 && saveToDb) {
-                logs.log('Trying to get through API INFO ' + song[1], "CORE-addSongToServer", logs.LogFile.DOWNLOAD_LOG);
-                request(API_WRAPPER_URL + "info?f=videoId&u=" + encodeURIComponent(song[1]), (err, resp, body) => {
-                    if (resp.statusCode === 200) {
-                        body = JSON.parse(body);
-                        setVideoId(id, body.videoId);
-                    }
-                });
-            }
-
-            if (video_id.length > 0) {
-                setVideoId(id, video_id);
+            if (id >= 0) {
+                serverSongs[server_id].push([id].concat(song));
+                addSongById(id, [id].concat(song));
+                if (video_id.length <= 0 && saveToDb) {
+                    logs.log('Trying to get through API INFO ' + song[1], "CORE-addSongToServer", logs.LogFile.DOWNLOAD_LOG);
+                    request(API_WRAPPER_URL + "info?f=videoId&u=" + encodeURIComponent(song[1]), (err, resp, body) => {
+                        if (resp.statusCode === 200) {
+                          body = JSON.parse(body);
+                           setVideoId(id, body.videoId);
+                        }
+                    });
+                }
+            } else {
+                logs.log("ERROR! On addSongToServer, mysql.queryGetInsertedId -1", "DISCORD/MYSQL", core.logs.LogFile.ERROR_LOG);
+                discord.sendAdminWebhook("ERROR! On addSongToServer, mysql.queryGetInsertedId -1");
             }
         });
     }
@@ -290,11 +291,11 @@ async function startLoopPlay(channel, refresh, songCommand) {
 
     if (refresh) {
         if (serverVoiceDispatcher[channel.guild.id]) {
-            serverVoiceDispatcher[channel.guild.id].destroy();
+            serverVoiceDispatcher[channel.guild.id].destroy().catch(_ => { logs.log("ERROR! Could not destroy voice dispatcher " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });
         }
     
         if (serverVoiceConnection[channel.guild.id]) {
-            serverVoiceConnection[channel.guild.id].disconnect();
+            serverVoiceConnection[channel.guild.id].disconnect().catch(_ => { logs.log("ERROR! Could not disconnect voice connection " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });
         }
     }
 

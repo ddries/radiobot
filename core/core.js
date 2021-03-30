@@ -43,6 +43,8 @@ var userVotes = {};
 var userPacks = {};
 // serverid -> max songs
 var serverMaxSongs = {};
+// guild id -> shuffle state (true/false)
+var serverShuffles = {};
 
 var totalSongs = 0;
 
@@ -53,6 +55,7 @@ const CACHE_PATH = "cache/";
 var TECH_DIF = false;
 var API_WRAPPER_URL = config.api_url;
 var CLIENT_ID = "";
+const SONGS_PER_EMBED = 12;
 
 async function init(callback) {
     await logs.init();
@@ -77,14 +80,21 @@ function addSongToServer(song, server_id, video_id = "", saveToDb=false) {
                 if (video_id.length <= 0 && saveToDb) {
                     logs.log('Trying to get through API INFO ' + song[1], "CORE-addSongToServer", logs.LogFile.DOWNLOAD_LOG);
                     request(API_WRAPPER_URL + "info?f=videoId&u=" + encodeURIComponent(song[1]), (err, resp, body) => {
+                        if (err) throw err;
+                        console.log(resp);
                         if (resp.statusCode === 200) {
-                          body = JSON.parse(body);
+                           body = JSON.parse(body);
+                           console.log(id + " -> " + body.videoId);
                            setVideoId(id, body.videoId);
                         }
                     });
+                } else {
+                    if (video_id.length > 0) {
+                        setVideoId(id, video_id);
+                    }
                 }
             } else {
-                logs.log("ERROR! On addSongToServer, mysql.queryGetInsertedId -1", "DISCORD/MYSQL", core.logs.LogFile.ERROR_LOG);
+                logs.log("ERROR! On addSongToServer, mysql.queryGetInsertedId -1", "DISCORD/MYSQL", logs.LogFile.ERROR_LOG);
                 discord.sendAdminWebhook("ERROR! On addSongToServer, mysql.queryGetInsertedId -1");
             }
         });
@@ -291,11 +301,11 @@ async function startLoopPlay(channel, refresh, songCommand) {
 
     if (refresh) {
         if (serverVoiceDispatcher[channel.guild.id]) {
-            serverVoiceDispatcher[channel.guild.id].destroy().catch(_ => { logs.log("ERROR! Could not destroy voice dispatcher " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });
+            serverVoiceDispatcher[channel.guild.id].destroy(); /*.catch(_ => { logs.log("ERROR! Could not destroy voice dispatcher " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });*/
         }
     
         if (serverVoiceConnection[channel.guild.id]) {
-            serverVoiceConnection[channel.guild.id].disconnect().catch(_ => { logs.log("ERROR! Could not disconnect voice connection " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });
+            serverVoiceConnection[channel.guild.id].disconnect(); /*.catch(_ => { logs.log("ERROR! Could not disconnect voice connection " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });*/
         }
     }
 
@@ -367,21 +377,20 @@ function leaveVoiceChannel(serverid, clearPlayingSong=true) {
         clearCurrentlyPlayingSongInServer(serverid);
 }
 
-function buildSongList(guild, discord) {
+function buildSongList(guild, discord, page = 1) {
     let embed = new discord.MessageEmbed()
         .setColor("#fc9c1e")
         .setTitle(guild.name + " song list (" + getServerSongs(guild.id).length + "/" + getServerMaxSongs(guild.id) + "):")
         .setFooter('RadioBot')
         .setTimestamp();
-    
-    let embeds = [];
 
     let serverSongs = getServerSongs(guild.id);
-    if (serverSongs.length <= 25) {
+
+    if (serverSongs.length <= SONGS_PER_EMBED) {
         for (let i = 0; i < serverSongs.length; i++) {
-            if (i < 10)
+            if (i < 10) {
                 embed.addField("Song " + numbers[i], serverSongs[i][1]);
-            else {
+            } else {
                 let digits = [];
                 let istr = i.toString();
                 for (let j = 0, len = istr.length; j < len; j++) {
@@ -395,64 +404,52 @@ function buildSongList(guild, discord) {
                 embed.addField("Song " + numbersEmoji, serverSongs[i][1]);
             }
         }
-        embeds.push(embed);
+
+        return embed;
     } else {
-        let n_embeds = Math.ceil(serverSongs.length/25);
-        let n_songs = 25; //Math.ceil(serverSongs.length/n_embeds);
-        for (let j = 0; j < n_embeds; j++) {
-            let _embed = new discord.MessageEmbed()
-                .setColor("#fc9c1e")
-                .setFooter('RadioBot') 
-                .setTimestamp();
-            if (j == 0) {
-                _embed.setTitle(guild.name + " song list (" + getServerSongs(guild.id).length + "/" + getServerMaxSongs(guild.id) + "):");
-            }
-            
-            for (let k = 0; k < n_songs && (j*n_songs + k <= serverSongs.length-1); k++) {
-                let i = j*n_songs + k;
-                if (i > serverSongs.length) {
-                    i = serverSongs.length-1;
+        let offset = SONGS_PER_EMBED * (page - 1);
+        let final = (offset+SONGS_PER_EMBED > serverSongs.length) ? serverSongs.length : offset+SONGS_PER_EMBED;
+        for (let i = offset; i < final; i++) {
+            if (i < 10) {
+                embed.addField("Song " + numbers[i], serverSongs[i][1]);
+            } else {
+                let digits = [];
+                let istr = i.toString();
+                for (let j = 0, len = istr.length; j < len; j++) {
+                    digits.push(+istr.charAt(j));
                 }
-                if (i < 10)
-                    _embed.addField("Song " + numbers[i], serverSongs[i][1]);
-                else {
-                    let digits = [];
-                    let istr = i.toString();
-                    for (let j = 0, len = istr.length; j < len; j++) {
-                        digits.push(+istr.charAt(j));
-                    }
-        
-                    let numbersEmoji = "";
-                    for (let d of digits) {
-                        numbersEmoji += numbers[d];
-                    }
-                    _embed.addField("Song " + numbersEmoji, serverSongs[i][1]);
+    
+                let numbersEmoji = "";
+                for (let d of digits) {
+                    numbersEmoji += numbers[d];
                 }
+                embed.addField("Song " + numbersEmoji, serverSongs[i][1]);
             }
-
-            embeds.push(_embed);
         }
-    }
 
-    return embeds;
+        embed.setFooter("Page " + page + "/" + Math.ceil(serverSongs.length/SONGS_PER_EMBED) + " — RadioBot");
+        return embed;
+    }
 }
 
-function sendSongListAwaitReaction(user, channel, guild, discord, callback) {
-    let e = buildSongList(guild, discord);
+function sendSongListAwaitReaction(user, channel, guild, discord, callback, client = null, page=1) {
+    let e = buildSongList(guild, discord, page);
     
     channel.send(e).then(async _m => {
-        let songs = getServerSongs(guild.id);
-        for (let i = 0; i < songs.length; i++) {
-            await _m.react(numbers[i]);
-        }
+        _m.react(":left:825081080532172851");
+        _m.react(":right:825081129278111765");
 
-        const filter = (r, u) => { return numbers.includes(r.emoji.name) && u.id == user.id };
-        _m.awaitReactions(filter, { max: 1, time: 30000 }).then(collect => {
-            let r = collect.first();
-            callback(r);
-        }).catch(err => {
-            logs.log("ERROR! At sendSongListAwaitReaction (" + guild.id + ") " + err, "DISCORD", logs.LogFile.ERROR_LOG)
-        });
+        const filter = (r, u) => { return ["825081080532172851", "825081129278111765"].includes(r.emoji.id) && u.id == user.id };
+        const newAwait = (msg) => {
+            _m.awaitReactions(filter, { max: 1, time: 30000 }).then(collect => {
+                let r = collect.first();
+                callback(r, msg);
+                newAwait(msg);
+            }).catch(err => {
+                logs.log("ERROR! At sendSongListAwaitReaction (" + guild.id + ") " + err, "DISCORD", logs.LogFile.ERROR_LOG)
+            });
+        };
+        newAwait(_m);
     });
 }
 
@@ -545,6 +542,28 @@ function getQueue(serverid) {
     return serverQueues[serverid];
 }
 
+function setShuffle(serverid, shuffle, saveToDb=true) {
+    serverShuffles[serverid] = shuffle;
+
+    if (saveToDb) {
+        mysql.queryGetResult("SELECT state FROM shuffle WHERE serverid=" +serverid, res => {
+            if (res.length <= 0) {
+                mysql.query("INSERT INTO shuffle(serverid, state) VALUES(" + serverid + ", " + shuffle + ")");
+            } else {
+                mysql.query("UPDATE shuffle SET state=" + shuffle + " WHERE serverid=" +serverid);
+            }
+        });
+    }
+}
+
+function getShuffle(serverid) {
+    if (!serverShuffles.hasOwnProperty(serverid)) {
+        return -1;
+    }
+
+    return serverShuffles[serverid];
+}
+
 function getNextSongId(serverid) {
     if (!serverSongs.hasOwnProperty(serverid)) {
         serverSongs[serverid] = [];
@@ -552,16 +571,25 @@ function getNextSongId(serverid) {
     let songPlaying = getCurrentlyPlayingSongInServer(serverid);
 
     if (songPlaying.length > 0) {
-        let idx = getArrayIndex(serverSongs[serverid], songPlaying);
-        if (idx >= 0 && idx < serverSongs[serverid].length-1) {
-            idx++;
+        if (getShuffle(serverid) == -1 || !getShuffle(serverid)) {
+            let idx = getArrayIndex(serverSongs[serverid], songPlaying);
+            if (idx >= 0 && idx < serverSongs[serverid].length-1) {
+                idx++;
+                return serverSongs[serverid][idx][0];
+                //return idx+1;
+            } else if (idx >= serverSongs[serverid].length-1) {
+                return serverSongs[serverid][0][0];
+                //return 0;
+            } else if (idx < 0) {
+                return -1;
+            }
+        } else {
+            let oldIdx = getArrayIndex(serverSongs[serverid], songPlaying);
+            let idx = Math.floor(Math.random() * Math.floor(serverSongs[serverid].length-1));
+            while (idx == oldIdx) {
+                idx = Math.floor(Math.random() * Math.floor(serverSongs[serverid].length-1));
+            }
             return serverSongs[serverid][idx][0];
-            //return idx+1;
-        } else if (idx >= serverSongs[serverid].length-1) {
-            return serverSongs[serverid][0][0];
-            //return 0;
-        } else if (idx < 0) {
-            return -1;
         }
     } else {
         return serverSongs[serverid][0][0];
@@ -837,6 +865,9 @@ module.exports = {
     setServerMaxSongs: setServerMaxSongs,
     setClientId: setClientId,
     stopPlayingCurrentSong: stopPlayingCurrentSong,
+    serverShuffles: serverShuffles,
+    setShuffle: setShuffle,
+    getShuffle: getShuffle,
 
     totalSongs: totalSongs,
 
@@ -846,6 +877,7 @@ module.exports = {
     CACHE_PATH: CACHE_PATH,
     //YOUTUBE_DEFAULT_HEADERS: YOUTUBE_DEFAULT_HEADERS,
     API_WRAPPER_URL: API_WRAPPER_URL,
+    SONGS_PER_EMBED: SONGS_PER_EMBED,
 
     init: init
 }

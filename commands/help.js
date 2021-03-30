@@ -98,7 +98,7 @@ module.exports = {
                     .setFooter("RadioBot")
                     .setTimestamp()
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                    .setDescription(generarDescripcion(client, ["add", "remove", "list", "channel", "dc", "queue", "clear"]));
+                    .setDescription(generarDescripcion(client, ["add", "remove", "list", "channel", "dc", "queue", "clear", "shuffle"]));
 
                 m.channel.send(e);
             } else if (cat === "util") {

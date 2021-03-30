@@ -21,6 +21,7 @@ function addSongProcess(m) {
                     description: "You introduced a Youtube link for the song name. Remember this is the name and not the link of the song."
                 });
             } else if (resp.statusCode === 400) {
+                songName = songName.replace(/[^\x00-\x7F]/g, "").replace(/[\\$'"]/g, "\\$&");
                 core.discord.notify(core.discord.NotifyType.Success, m.channel, {
                     description: "Established song name to **" + songName + "**. Enter the Youtube link (with `https://`) of the song."
                 });

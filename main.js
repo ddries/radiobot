@@ -8,7 +8,7 @@ var web = require('./webserver.js');
 
 const dbl = new DBL(core.config.dbl_token, client);
 
-const DEBUG = true;
+const DEBUG = false;
 
 core.init(() => {
     core.logs.log("Initialized core modules", "LOAD", core.logs.LogFile.LOAD_LOG);
@@ -73,6 +73,19 @@ core.init(() => {
                             core.logs.log("Enabled song queue to " + server, "COMMON", core.logs.LogFile.COMMON_LOG);
                         } else {
                             core.setQueue(server, false, false);    
+                        }
+                    } /* else {
+                        core.setQueue(server, false, false);
+                    } */
+                });
+
+                core.mysql.queryGetResult("SELECT state FROM shuffle WHERE serverid=" + server, res => {
+                    if (res.length > 0) {
+                        if (res[0].state) {
+                            core.setShuffle(server, true, false);
+                            core.logs.log("--------------> Enabled song shuffle to " + server, "COMMON", core.logs.LogFile.COMMON_LOG);
+                        } else {
+                            core.setShuffle(server, false, false);
                         }
                     } /* else {
                         core.setQueue(server, false, false);

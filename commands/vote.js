@@ -28,6 +28,10 @@ module.exports = {
                     {
                         "name": "PACK: 2, COST: 2 votes",
                         "value": "Enable queue in your server to loop your whole song list and not only one song. [`" + core.discord.DISCORD_PREFIX + "queue`]"
+                    },
+                    {
+                        "name": "PACK: 3, COST: 2 votes",
+                        "value": "Enable song shuffle in your server to loop your songs randomly one after the other. **`Warning`**, this feature only works together with song queue. [`" + core.discord.DISCORD_PREFIX + "shuffle`]"
                     }
                 );
 

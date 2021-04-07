@@ -26,12 +26,12 @@ module.exports = {
 
         core.setCurrentlyPlayingSongInServer(m.guild.id, song, true);
 
-        let text = "**" + song[1] + "**";
+        let text = "**" + song[1] + "\n**";
         if (core.getQueue(m.guild.id) != -1) {
-            text += " | *Song queue is " + (core.getQueue(m.guild.id) ? "enabled" : "disabled") + " (" + core.discord.DISCORD_PREFIX + "queue)*";
+            text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "queue)**";
         }
         if (core.getShuffle(m.guild.id) != -1) {
-            text += " | *Song shuffle is " + (core.getShuffle(m.guild.id) ? "enabled" : "disabled") + " (" + core.discord.DISCORD_PREFIX + "shuffle)*";
+            text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "shuffle)**";
         }
         core.discord.notify(core.discord.NotifyType.Info, m.channel, {
             title: "Playing in " + m.guild.name + ":",

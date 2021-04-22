@@ -24,6 +24,8 @@ module.exports = {
                     core.discord.notify(core.discord.NotifyType.Success, m.channel, {
                         description: 'Changed prefix to `' + prefix + '`'
                     });
+
+                    core.discord.sendWebhook("Changed prefix in " + m.guild.name + " (" + m.guild.id + ") to " + prefix);
                 }
             }
         } catch (e) {

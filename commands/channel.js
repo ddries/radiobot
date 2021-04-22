@@ -10,7 +10,7 @@ module.exports = {
             let channel = core.getServerChannel(m.guild.id);
             if (!channel || channel.length <= 0) {
                 core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                    description: "I'm not configured in this server yet! `" + core.discord.DISCORD_PREFIX + "channel [name / part of name]`"
+                    description: "I'm not configured in this server yet! `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]`"
                 });
 
                 return;
@@ -19,7 +19,7 @@ module.exports = {
             client.channels.fetch(channel).then(c => {
                 core.discord.notify(core.discord.NotifyType.Info, m.channel, {
                     description: "Currently fixed in: **" + c.name + "**\n\n" +
-                                "Type `" + core.discord.DISCORD_PREFIX + "channel [name / part of name]` to change this channel"
+                                "Type `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]` to change this channel"
                 });
             }).catch(err => {
                 core.logs.log("ERROR! Fetching channel in server " + m.guild.id + " channel " + channel + " in command channel " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
@@ -50,7 +50,7 @@ module.exports = {
                             core.joinVoiceChannel(client, m.guild.id);
                         else {
                             core.discord.notify(core.discord.NotifyType.Info, m.channel, {
-                                description: "There's nothing playing in this server. Don't forget to use **" + core.discord.DISCORD_PREFIX + "song** after disconnecting the bot with **" + core.discord.DISCORD_PREFIX + "dc**"
+                                description: "There's nothing playing in this server. Don't forget to use **" + core.getServerPrefix(m.guild.id) + "song** after disconnecting the bot with **" + core.getServerPrefix(m.guild.id) + "dc**"
                             })
                         }
 

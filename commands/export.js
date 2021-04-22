@@ -12,7 +12,7 @@ module.exports = {
 
         if (!core.getServerSongs(m.guild.id) || core.getServerSongs(m.guild.id).length <= 0) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.discord.DISCORD_PREFIX + "add**"
+                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.getServerPrefix(m.guild.id) + "add**"
             });
             return;
         }
@@ -25,7 +25,7 @@ module.exports = {
 
         let code = md5(JSON.stringify(songArray))
 
-        m.reply("done! You can now import this server song list with: `" + core.discord.DISCORD_PREFIX + "import " + code.substr(0, 10) + "`");
+        m.reply("done! You can now import this server song list with: `" + core.getServerPrefix(m.guild.id) + "import " + code.substr(0, 10) + "`");
 
         // must finish....
     }

@@ -45,6 +45,8 @@ var userPacks = {};
 var serverMaxSongs = {};
 // guild id -> shuffle state (true/false)
 var serverShuffles = {};
+// guild id -> prefix
+var serverPrefixes = {};
 
 var totalSongs = 0;
 
@@ -363,14 +365,14 @@ async function startLoopPlay(channel, refresh, songCommand) {
 }
 
 function leaveVoiceChannel(serverid, clearPlayingSong=true) {
-    if (serverVoiceConnection.hasOwnProperty(serverid)) {
-        serverVoiceConnection[serverid].disconnect();
-        delete serverVoiceConnection[serverid];
-    }
-
     if (serverVoiceDispatcher.hasOwnProperty(serverid)) {
         serverVoiceDispatcher[serverid].destroy();
         delete serverVoiceDispatcher[serverid];
+    }
+    
+    if (serverVoiceConnection.hasOwnProperty(serverid)) {
+        serverVoiceConnection[serverid].disconnect();
+        delete serverVoiceConnection[serverid];
     }
 
     if (clearPlayingSong)
@@ -731,6 +733,28 @@ function setServerMaxSongs(serverid, maxsongs, updateBd = false) {
     }
 }
 
+function setServerPrefix(serverid, prefix, updateBd = true) {
+    serverPrefixes[serverid] = prefix;
+
+    if (updateBd) {
+        mysql.queryGetResult("SELECT prefix FROM prefixes WHERE serverid=" +serverid, res => {
+            if (res.length <= 0) {
+                mysql.query("INSERT INTO prefixes(serverid, prefix) VALUES(" + serverid + ", '" + prefix + "')");
+            } else {
+                mysql.query("UPDATE prefixes SET prefix='" + prefix + "' WHERE serverid=" +serverid);
+            }
+        });
+    }
+}
+
+function getServerPrefix(serverid) {
+    if (!serverPrefixes.hasOwnProperty(serverid)) {
+        return discord.DEFAULT_DISCORD_PREFIX;
+    }
+
+    return serverPrefixes[serverid];
+}
+
 function getServerMaxSongs(serverid) {
     if (!serverMaxSongs.hasOwnProperty(serverid)) {
         return MAX_SERVER_SONGS;
@@ -868,6 +892,8 @@ module.exports = {
     serverShuffles: serverShuffles,
     setShuffle: setShuffle,
     getShuffle: getShuffle,
+    setServerPrefix: setServerPrefix,
+    getServerPrefix: getServerPrefix,
 
     totalSongs: totalSongs,
 

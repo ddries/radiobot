@@ -7,7 +7,7 @@ module.exports = {
     execute: (m, args, discord, client) => {
         if (args.length <= 0) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "USAGE: " + core.discord.DISCORD_PREFIX + "report [message]"
+                description: "USAGE: " + core.getServerPrefix(m.guild.id) + "report [message]"
             });
             return;
         }
@@ -28,7 +28,7 @@ module.exports = {
 
         let id = core.addReport(m.channel);
 
-        core.discord.sendAdminWebhook("**NEW REPORT** from " + m.guild.name + " (" + m.guild.id + "), **" + m.author.tag + "**. Use " + core.discord.DISCORD_PREFIX + "replyreport " + id + " to answer:\n\n" + text);
+        core.discord.sendAdminWebhook("**NEW REPORT** from " + m.guild.name + " (" + m.guild.id + "), **" + m.author.tag + "**. Use " + core.getServerPrefix(m.guild.id) + "replyreport " + id + " to answer:\n\n" + text);
 
         core.discord.notify(core.discord.NotifyType.Info, m.channel, {
             description: "Message reported. Our team will reply as soon as possible."

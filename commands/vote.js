@@ -13,25 +13,25 @@ module.exports = {
                 .setTimestamp()
                 .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://top.gg/bot/778044858760953866/vote")
                 .setDescription("**[Vote here](https://top.gg/bot/778044858760953866/vote)** for **RadioBot** and get benefits! You can vote for free for RadioBot on Top.gg. When you reach 2 or more votes, you can spend your collected votes for special benefits for your server!\n\n"
-                + "You can get these benefits using `" + core.discord.DISCORD_PREFIX + "voteuse [pack]`, being `[pack]` the feature you want to unlock, for example: `" + core.discord.DISCORD_PREFIX + "voteuse 0`, to unlock a slot for a longer song.\n\n" +
+                + "You can get these benefits using `" + core.getServerPrefix(m.guild.id) + "voteuse [pack]`, being `[pack]` the feature you want to unlock, for example: `" + core.getServerPrefix(m.guild.id) + "voteuse 0`, to unlock a slot for a longer song.\n\n" +
                 "Packs are redeemed while you use RadioBot. That means that you will be able to redeem the **PACK 0** when you try to add a song longer than 10 minutes and shorter than 20 minutes, and you own a **PACK 0**." + 
-                "\n\n**" + m.author.username + "**, you have **" + core.getUserVotes(m.author.id) + "** vote(s). You have **" + core.getUserPacks(m.author.id).length + "** pack(s), you may check them with `" + core.discord.DISCORD_PREFIX + "packs`.")
+                "\n\n**" + m.author.username + "**, you have **" + core.getUserVotes(m.author.id) + "** vote(s). You have **" + core.getUserPacks(m.author.id).length + "** pack(s), you may check them with `" + core.getServerPrefix(m.guild.id) + "packs`.")
                 .addFields(
                     {
                         "name": "PACK: 0, COST: 2 votes",
-                        "value": "Add in any server you want a song longer than 10 minutes (but shorter than 20 minutes). When you try to add a song longer than 10 minutes, you will be able to use your pack. [`" + core.discord.DISCORD_PREFIX + "add`]"
+                        "value": "Add in any server you want a song longer than 10 minutes (but shorter than 20 minutes). When you try to add a song longer than 10 minutes, you will be able to use your pack. [`" + core.getServerPrefix(m.guild.id) + "add`]"
                     },
                     {
                         "name": "PACK: 1, COST: 5 votes",
-                        "value": "Get another song slot for the server. When you try to add a song when there are no more available slots for the server, you will be able to use your pack. [`" + core.discord.DISCORD_PREFIX + "add`]"
+                        "value": "Get another song slot for the server. When you try to add a song when there are no more available slots for the server, you will be able to use your pack. [`" + core.getServerPrefix(m.guild.id) + "add`]"
                     },
                     {
                         "name": "PACK: 2, COST: 2 votes",
-                        "value": "Enable queue in your server to loop your whole song list and not only one song. [`" + core.discord.DISCORD_PREFIX + "queue`]"
+                        "value": "Enable queue in your server to loop your whole song list and not only one song. [`" + core.getServerPrefix(m.guild.id) + "queue`]"
                     },
                     {
                         "name": "PACK: 3, COST: 2 votes",
-                        "value": "Enable song shuffle in your server to loop your songs randomly one after the other. **`Warning`**, this feature only works together with song queue. [`" + core.discord.DISCORD_PREFIX + "shuffle`]"
+                        "value": "Enable song shuffle in your server to loop your songs randomly one after the other. **`Warning`**, this feature only works together with song queue. [`" + core.getServerPrefix(m.guild.id) + "shuffle`]"
                     }
                 );
 

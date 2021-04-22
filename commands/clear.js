@@ -7,7 +7,7 @@ module.exports = {
     execute: (m, args, discord) => {
         if (!core.getServerSongs(m.guild.id) || core.getServerSongs(m.guild.id).length <= 0) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.discord.DISCORD_PREFIX + "add**"
+                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.getServerPrefix(m.guild.id) + "add**"
             });
             return;
         }

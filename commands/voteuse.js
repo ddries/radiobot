@@ -16,7 +16,7 @@ module.exports = {
 
             if (args.length < 1 || isNaN(args[0])) {
                 core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                    description: "USAGE: " + core.discord.DISCORD_PREFIX + "voteuse [pack]"
+                    description: "USAGE: " + core.getServerPrefix(m.guild.id) + "voteuse [pack]"
                 });
                 return;
             }
@@ -41,7 +41,7 @@ module.exports = {
 
             if (votesNeeded <= 0) {
                 core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                    description: "**Pack " + pack + "** not found. Please, check all packs with `" + core.discord.DISCORD_PREFIX + "vote`"
+                    description: "**Pack " + pack + "** not found. Please, check all packs with `" + core.getServerPrefix(m.guild.id) + "vote`"
                 });
                 return;
             }
@@ -58,7 +58,7 @@ module.exports = {
             core.addUserPack(m.author.id, pack, true);
 
             core.discord.notify(core.discord.NotifyType.Success, m.channel, {
-                description: "**Congratulations!** You bought one **PACK " + pack + "** for **" + votesNeeded + " votes**. You may see what you got with `" + core.discord.DISCORD_PREFIX + "vote`."
+                description: "**Congratulations!** You bought one **PACK " + pack + "** for **" + votesNeeded + " votes**. You may see what you got with `" + core.getServerPrefix(m.guild.id) + "vote`."
             });
             core.discord.sendWebhook(m.author.username + " (" + m.author.id + ") just purchashed a **PACK " + pack + "**");
         } catch (e) {

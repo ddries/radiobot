@@ -8,7 +8,7 @@ module.exports = {
     execute: (m, args, discord, client) => {
         if (!core.getServerSongs(m.guild.id) || core.getServerSongs(m.guild.id).length <= 0) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.discord.DISCORD_PREFIX + "add**"
+                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.getServerPrefix(m.guild.id) + "add**"
             });
             return;
         }
@@ -17,7 +17,7 @@ module.exports = {
         if (!m.member.voice.channelID) {
             if (!channel || channel.length <= 0) {
                 core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                    description: "I'm not configured in this server yet! `" + core.discord.DISCORD_PREFIX + "channel [name / part of name]` or join a voice channel and use `" + core.discord.DISCORD_PREFIX + "song` again"
+                    description: "I'm not configured in this server yet! `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]` or join a voice channel and use `" + core.getServerPrefix(m.guild.id) + "song` again"
                 });
     
                 return;
@@ -27,7 +27,7 @@ module.exports = {
                 core.setServerChannel(m.guild.id, m.member.voice.channelID, true);
                 client.channels.fetch(m.member.voice.channelID).then(c => {
                     core.discord.notify(core.discord.NotifyType.Success, m.channel, {
-                        description: "Automatically updated fixed channel to **" + c.name + "**. You can change it with `" + core.discord.DISCORD_PREFIX + "channel [name / part of name]`"
+                        description: "Automatically updated fixed channel to **" + c.name + "**. You can change it with `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]`"
                     });
                 }).catch(err => {
                     core.logs.log("ERROR! Fetching channel in server " + m.guild.id + " channel " + m.member.voice.channelID + " in command song " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
@@ -49,10 +49,10 @@ module.exports = {
 
             let text = "**" + song[1] + "**";
             if (core.getQueue(m.guild.id) != -1) {
-                text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "queue)**";
+                text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "queue)**";
             }
             if (core.getShuffle(m.guild.id) != -1) {
-                text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "shuffle)**";
+                text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "shuffle)**";
             }
             core.discord.notify(core.discord.NotifyType.Info, m.channel, {
                 title: "Playing in " + m.guild.name + ":",
@@ -70,7 +70,11 @@ module.exports = {
 
             core.joinVoiceChannel(m.client, m.guild.id, nueva, true);
         } else {
-            m.channel.send("( You can also use **" + core.discord.DISCORD_PREFIX + "song [number]** )");
+            core.discord.notify(core.discord.NotifyType.Error, m.channel, {
+                description: "USAGE: **" + core.getServerPrefix(m.guild.id) + "song [number]**. Use **" + core.getServerPrefix(m.guild.id) + "list** to see all songs."
+            });
+            return;
+            m.channel.send("( You can also use **" + core.getServerPrefix(m.guild.id) + "song [number]** )");
             try {
                 core.sendSongListAwaitReaction(m.author, m.channel, m.guild, discord, reaction => {
                     if (!reaction || !reaction.emoji) return;
@@ -83,10 +87,10 @@ module.exports = {
         
                             let text = "**" + song[1] + "**";
                             if (core.getQueue(m.guild.id) != -1) {
-                                text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "queue)**";
+                                text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "queue)**";
                             }
                             if (core.getShuffle(m.guild.id) != -1) {
-                                text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "shuffle)**";
+                                text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "shuffle)**";
                             }
                             core.discord.notify(core.discord.NotifyType.Info, m.channel, {
                                 title: "Playing in " + m.guild.name + ":",

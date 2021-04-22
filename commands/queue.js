@@ -39,7 +39,7 @@ module.exports = {
                     return;
                 } else {
                     core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                        description: "Your server does not have queue available. Please, check `" + core.discord.DISCORD_PREFIX + "vote` for help."
+                        description: "Your server does not have queue available. Please, check `" + core.getServerPrefix(m.guild.id) + "vote` for help."
                     });
                     return;
                 }

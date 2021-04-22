@@ -10,7 +10,7 @@ const whStatus = new Discord.WebhookClient(config.discord_statuswh_id, config.di
 const whAdmin = new Discord.WebhookClient(config.discord_adminwh_id, config.discord_adminwh_token);
 
 const DISCORD_TOKEN = config.discord_token;
-const DISCORD_PREFIX = config.discord_prefix;
+const DEFAULT_DISCORD_PREFIX = config.discord_prefix;
 
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
@@ -43,7 +43,9 @@ function messageParser(client, discord) {
         
         core.setServerLastUsedChannel(m.guild.id, m.channel.id);
 
-        if (!m.content.startsWith(DISCORD_PREFIX)) {
+        const DISCORD_PREFIX = core.getServerPrefix(m.guild.id);
+
+        if (!m.content.startsWith(DISCORD_PREFIX) && !m.content.startsWith(DEFAULT_DISCORD_PREFIX)) {
             if (core.getUserWaitingForResponse(m.guild.id).length > 0) {
                 let u = core.getUserWaitingForResponse(m.guild.id);
                 if (u[0] == m.author.id) {
@@ -65,7 +67,13 @@ function messageParser(client, discord) {
             }
         }
 
-        const args = m.content.slice(DISCORD_PREFIX.length).trim().split(/ +/);
+        let args = null;
+        if (!m.content.includes(DISCORD_PREFIX)) {
+            args = m.content.slice(DEFAULT_DISCORD_PREFIX.length).trim().split(/ +/);
+        } else {
+            args = m.content.slice(DISCORD_PREFIX.length).trim().split(/ +/);
+        }
+        
         let command = args.shift().toLowerCase();
         
         if (!client.commands.has(command)) {
@@ -101,7 +109,6 @@ function getSongNameAddingToServer(serverid) {
 function notify(notifyType, channel, data) {
     let e = new Discord.MessageEmbed()
         .setColor(notifyType)
-        .setFooter("RadioBot")
         .setTimestamp();
     
     if (data.title) {
@@ -114,6 +121,12 @@ function notify(notifyType, channel, data) {
 
     if (data.url) {
         e.setURL(data.url);
+    }
+
+    if (data.footer) {
+        e.setFooter(data.footer)
+    } else {
+        e.setFooter("RadioBot")
     }
 
     channel.send(e);
@@ -184,7 +197,7 @@ module.exports = {
 
     NotifyType: NotifyType,
     DISCORD_TOKEN: DISCORD_TOKEN,
-    DISCORD_PREFIX: DISCORD_PREFIX,
+    DEFAULT_DISCORD_PREFIX: DEFAULT_DISCORD_PREFIX,
 
     init: init
 }

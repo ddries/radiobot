@@ -22,10 +22,10 @@ module.exports = {
 
         let text = "**" + song[1] + "**";
         if (core.getQueue(m.guild.id) != -1) {
-            text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "queue)**";
+            text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "queue)**";
         }
         if (core.getShuffle(m.guild.id) != -1) {
-            text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "shuffle)**";
+            text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "shuffle)**";
         }
         core.discord.notify(core.discord.NotifyType.Info, m.channel, {
             title: "Playing in " + m.guild.name + ":",

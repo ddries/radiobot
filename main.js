@@ -50,6 +50,13 @@ core.init(() => {
                 }
             });
 
+            core.mysql.queryGetResult("SELECT * FROM prefixes", resPrefixes => {
+                for (let serverPrefix of resPrefixes) {
+                    core.setServerPrefix(serverPrefix.serverid, serverPrefix.prefix, false);
+                    core.logs.log("Set server prefix of " + serverPrefix.serverid + " to " + serverPrefix.prefix, "LOAD", core.logs.LogFile.LOAD_LOG);
+                }
+            });
+
             for (let server of core.getAllServers()) {
                 core.mysql.queryGetResult("SELECT song_id FROM current_playing WHERE serverid=" + server, _res => {
                     if (_res.length > 0) {
@@ -104,7 +111,7 @@ core.init(() => {
 
     client.once("ready", () => {
         core.logs.log("Logged in " + client.user.tag, "DISCORD", core.logs.LogFile.DISCORD_LOG);
-        core.discord.setActivity(client, core.discord.DISCORD_PREFIX + "help");
+        core.discord.setActivity(client, core.discord.DEFAULT_DISCORD_PREFIX + "help");
         
         core.setClientId(client.user.id);
 
@@ -114,7 +121,7 @@ core.init(() => {
             core.discord.noticeOnline();
         }
         client.setInterval(() => {
-            core.discord.setActivity(client, core.discord.DISCORD_PREFIX + "help | " + client.guilds.cache.array().length + " servers | " + core.totalSongs + " songs");
+            core.discord.setActivity(client, core.discord.DEFAULT_DISCORD_PREFIX + "help | " + client.guilds.cache.array().length + " servers | " + core.totalSongs + " songs");
         }, 7200);
         if (!DEBUG) {
             client.setTimeout(() => {
@@ -191,26 +198,26 @@ core.init(() => {
     });
 
     client.on("guildCreate", guild => {
-        let ownerId = guild.ownerID;
+        // let ownerId = guild.ownerID;
 
-        client.users.fetch(ownerId).then(owner => {
-            let e = new Discord.MessageEmbed()
-                .setColor(core.discord.NotifyType.Info)
-                .setFooter("RadioBot");
+        // client.users.fetch(ownerId).then(owner => {
+        //     let e = new Discord.MessageEmbed()
+        //         .setColor(core.discord.NotifyType.Info)
+        //         .setFooter("RadioBot");
 
-            e.setTimestamp();
-            e.setDescription("Thanks for adding me to your server!\n\n" + 
-                            "Before you can actually play songs non-stop, you'll need to configure me first.\n\n" + 
-                            "First of all, choose a voice channel for me. You can do this with `" + core.discord.DISCORD_PREFIX + "channel [name / part of name]`.\n\n" +
-                            "You will also need to add songs to the server. You can do this with `" + core.discord.DISCORD_PREFIX + "add`.\n\n"+
-                            "If you need more help, you can type `" + core.discord.DISCORD_PREFIX + "help`.\n\n" +
-                            "I really hope you enjoy me!\n\n");
-            owner.send(e).then().catch(err => {
-                core.logs.log("ERROR! Sending DM to user " + ownerId + " at guildCreate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-            });
-        }).catch(err => {
-            core.logs.log("ERROR! Fetching member " + ownerId + " at guildCreate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-        });
+        //     e.setTimestamp();
+        //     e.setDescription("Thanks for adding me to your server!\n\n" + 
+        //                     "Before you can actually play songs non-stop, you'll need to configure me first.\n\n" + 
+        //                     "First of all, choose a voice channel for me. You can do this with `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]`.\n\n" +
+        //                     "You will also need to add songs to the server. You can do this with `" + core.getServerPrefix(m.guild.id) + "add`.\n\n"+
+        //                     "If you need more help, you can type `" + core.getServerPrefix(m.guild.id) + "help`.\n\n" +
+        //                     "I really hope you enjoy me!\n\n");
+        //     owner.send(e).then().catch(err => {
+        //         core.logs.log("ERROR! Sending DM to user " + ownerId + " at guildCreate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+        //     });
+        // }).catch(err => {
+        //     core.logs.log("ERROR! Fetching member " + ownerId + " at guildCreate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+        // });
 
         core.logs.log("Joined " + guild.name + " (" + guild.id + ")", "JOIN", core.logs.log.COMMON_LOG);
         core.discord.sendWebhook("Joined " + guild.name + " (" + guild.id + ")");

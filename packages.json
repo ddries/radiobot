@@ -1,0 +1,15 @@
+{
+    "dependencies": {
+      "@discordjs/opus": "^0.4.0",
+      "dblapi.js": "^2.4.1",
+      "discord.js": "^12.5.1",
+      "express": "^4.17.1",
+      "ffmpeg-static": "^4.2.7",
+      "md5": "^2.3.0",
+      "mysql": "^2.18.1",
+      "request": "^2.88.2",
+      "ytdl-core": "^4.5.0",
+      "ytsr": "^3.3.1"
+    }
+  }
+  

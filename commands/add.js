@@ -46,7 +46,7 @@ function addSongProcess(m) {
                             core.logs.log('Trying to get through API INFO ' + songUrl, "ADD-INFO", core.logs.LogFile.DOWNLOAD_LOG);
                             core.request(core.API_WRAPPER_URL + "info?f=lengthSeconds,videoId&u=" + encodeURIComponent(songUrl), (err, resp, body) => {
                                 if (resp.statusCode !== 200) {
-                                    m.reply("there has been an error while executing this command (API Wrapper). Please contact developers with " + core.discord.DISCORD_PREFIX + "report.");
+                                    m.reply("there has been an error while executing this command (API Wrapper). Please contact developers with " + core.getServerPrefix(m.guild.id) + "report.");
                                     core.clearUserWaitingForResponse(m.guild.id);
                                     return;
                                 }
@@ -65,7 +65,7 @@ function addSongProcess(m) {
                                                 core.totalSongs++;
 
                                                 core.discord.notify(core.discord.NotifyType.Success, m.channel, {
-                                                    description: "Your song **" + songName + "** has been added to " + m.guild.name + "! You can play it with **" + core.discord.DISCORD_PREFIX + "song**.",
+                                                    description: "Your song **" + songName + "** has been added to " + m.guild.name + "! You can play it with **" + core.getServerPrefix(m.guild.id) + "song**.",
                                                     title: songName,
                                                     url: songUrl
                                                 });
@@ -80,7 +80,7 @@ function addSongProcess(m) {
                                         });
                                     } else {
                                         core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                                            description: "You can't add songs longer than 10 minutes (psst, use `" + core.discord.DISCORD_PREFIX + "vote`)"
+                                            description: "You can't add songs longer than 10 minutes (psst, use `" + core.getServerPrefix(m.guild.id) + "vote`)"
                                         });
                 
                                         return;
@@ -91,7 +91,7 @@ function addSongProcess(m) {
                                     core.totalSongs++;
 
                                     core.discord.notify(core.discord.NotifyType.Success, m.channel, {
-                                        description: "Your song **" + songName + "** has been added to " + m.guild.name + "! You can play it with **" + core.discord.DISCORD_PREFIX + "song**.",
+                                        description: "Your song **" + songName + "** has been added to " + m.guild.name + "! You can play it with **" + core.getServerPrefix(m.guild.id) + "song**.",
                                         title: songName,
                                         url: songUrl
                                     });
@@ -100,12 +100,12 @@ function addSongProcess(m) {
                                 }
                             });
                         } else {
-                            m.reply("there has been an error while executing this command (API Wrapper). Please contact developers with " + core.discord.DISCORD_PREFIX + "report.");
+                            m.reply("there has been an error while executing this command (API Wrapper). Please contact developers with " + core.getServerPrefix(m.guild.id) + "report.");
                         }
                     });
                 });
             } else {
-                m.reply("there has been an error while executing this command (API Wrapper). Please contact developers with " + core.discord.DISCORD_PREFIX + "report");
+                m.reply("there has been an error while executing this command (API Wrapper). Please contact developers with " + core.getServerPrefix(m.guild.id) + "report");
             }
         });
         

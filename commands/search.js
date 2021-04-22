@@ -36,7 +36,7 @@ module.exports = {
     execute: (m, args, discord, client) => {
         if (args.length < 1) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "USAGE: " + core.discord.DISCORD_PREFIX + "search [search input]"
+                description: "USAGE: " + core.getServerPrefix(m.guild.id) + "search [search input]"
             });
             return;
         }

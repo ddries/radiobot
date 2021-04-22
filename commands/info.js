@@ -7,7 +7,7 @@ module.exports = {
     execute: (m, args, discord) => {
         if (!core.getServerSongs(m.guild.id) || core.getServerSongs(m.guild.id).length <= 0) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.discord.DISCORD_PREFIX + "add**"
+                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.getServerPrefix(m.guild.id) + "add**"
             });
             return;
         }
@@ -22,7 +22,11 @@ module.exports = {
             });
             return;
         } else {
-            m.channel.send("( You can also use **" + core.discord.DISCORD_PREFIX + "info [number]** )");
+            core.discord.notify(core.discord.NotifyType.Error, m.channel, {
+                description: "USAGE: **" + core.getServerPrefix(m.guild.id) + "info [number]**. Use **" + core.getServerPrefix(m.guild.id) + "list** to see all songs."
+            });
+            return;
+            m.channel.send("( You can also use **" + core.getServerPrefix(m.guild.id) + "info [number]** )");
             core.sendSongListAwaitReaction(m.author, m.channel, m.guild, discord, reaction => {
                 for (let i = 0; i < core.numbers.length; i++) {
                     if (core.numbers[i] == reaction.emoji.name) {

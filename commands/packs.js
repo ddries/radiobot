@@ -8,7 +8,7 @@ module.exports = {
         try {
             if (core.getUserPacks(m.author.id).length <= 0) {
                 core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                    description: "You don't have any packs yet! Use `" + core.discord.DISCORD_PREFIX + "vote`"
+                    description: "You don't have any packs yet! Use `" + core.getServerPrefix(m.guild.id) + "vote`"
                 });
                 return;
             }

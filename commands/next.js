@@ -8,7 +8,7 @@ module.exports = {
     execute: (m, args) => {
         if (!core.getServerSongs(m.guild.id) || core.getServerSongs(m.guild.id).length <= 0) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.discord.DISCORD_PREFIX + "add**"
+                description: "There aren't any songs added in " + m.guild.name + " yet! Try adding some with **" + core.getServerPrefix(m.guild.id) + "add**"
             });
             return;
         }
@@ -16,7 +16,7 @@ module.exports = {
         let current = core.getCurrentlyPlayingSongInServer(m.guild.id);
         if (!current || current.length <= 0) {
            core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-               description: "To use this command there has to be something playing first (" + core.discord.DISCORD_PREFIX + "song)"
+               description: "To use this command there has to be something playing first (" + core.getServerPrefix(m.guild.id) + "song)"
            });
            return;
         }
@@ -28,10 +28,10 @@ module.exports = {
 
         let text = "**" + song[1] + "\n**";
         if (core.getQueue(m.guild.id) != -1) {
-            text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "queue)**";
+            text += '\n🔁: ' + (core.getQueue(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "queue)**";
         }
         if (core.getShuffle(m.guild.id) != -1) {
-            text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.discord.DISCORD_PREFIX + "shuffle)**";
+            text += '\n🔀: ' + (core.getShuffle(m.guild.id) ? "✅" : "❌") + " | **(" + core.getServerPrefix(m.guild.id) + "shuffle)**";
         }
         core.discord.notify(core.discord.NotifyType.Info, m.channel, {
             title: "Playing in " + m.guild.name + ":",

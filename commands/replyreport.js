@@ -9,7 +9,7 @@ module.exports = {
     execute: (m, args, discord, client) => {
         if (args.length <= 0) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "USAGE: " + core.discord.DISCORD_PREFIX + "replyreport [id] [message]"
+                description: "USAGE: " + core.getServerPrefix(m.guild.id) + "replyreport [id] [message]"
             });
             return;
         }
@@ -18,7 +18,7 @@ module.exports = {
 
         if (isNaN(id)) {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "USAGE: " + core.discord.DISCORD_PREFIX + "replyreport [id] [message]"
+                description: "USAGE: " + core.getServerPrefix(m.guild.id) + "replyreport [id] [message]"
             });
             return;
         }

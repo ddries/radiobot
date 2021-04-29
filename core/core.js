@@ -242,7 +242,7 @@ function isServerDisconnected(serverid) {
 
 function joinVoiceChannel(client, serverid, refresh=true, songCommand=false) {
     if (serverChannels.hasOwnProperty(serverid)) {
-        client.guilds.fetch(serverid).then(async g => {
+        client.guilds.fetch(serverid).then(g => {
             for (let c of g.channels.cache) {
                 if (c[0] == serverChannels[serverid]) {
                     if (c[1].type == 'voice') {
@@ -283,6 +283,7 @@ function removeServer(serverid) {
 async function startLoopPlay(channel, refresh, songCommand) {
     let songUrl = "";
     let song = [];
+
 
     if (getQueue(channel.guild.id) != -1 && getQueue(channel.guild.id) && !songCommand) {
         if (getServerSongs(channel.guild.id).length > 0) {
@@ -588,7 +589,7 @@ function getNextSongId(serverid) {
         } else {
             let oldIdx = getArrayIndex(serverSongs[serverid], songPlaying);
             let idx = Math.floor(Math.random() * Math.floor(serverSongs[serverid].length-1));
-            while (idx == oldIdx) {
+            while (idx == oldIdx  && serverSongs[serverid].length > 2) {
                 idx = Math.floor(Math.random() * Math.floor(serverSongs[serverid].length-1));
             }
             return serverSongs[serverid][idx][0];

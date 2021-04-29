@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
+
 const DBL = require("dblapi.js");
-const fs = require('fs');
 
 var core = require('./core/core.js');
 var web = require('./webserver.js');
@@ -109,10 +109,12 @@ core.init(() => {
 
     core.discord.messageParser(client, Discord);
 
+    // client.on('debug', console.log).on('warn', console.log);
+
     client.once("ready", () => {
         core.logs.log("Logged in " + client.user.tag, "DISCORD", core.logs.LogFile.DISCORD_LOG);
         core.discord.setActivity(client, core.discord.DEFAULT_DISCORD_PREFIX + "help");
-        
+
         core.setClientId(client.user.id);
 
         web.init();
@@ -161,6 +163,18 @@ core.init(() => {
             }, 1800 * 1000);
         }
 
+        // let i = 0;
+        // let servers = core.getAllServers();
+        // const _loop_servers_init = () => {
+        //     setTimeout(() => {
+        //         i++;
+        //         if (i < servers.length) {
+        //             core.joinVoiceChannel(client, servers[i]);
+        //             _loop_servers_init();
+        //         }
+        //     }, 100);
+        // };
+        // _loop_servers_init();
         for (let server of core.getAllServers()) {
             if (core.getServerSongs(server).length > 0 && core.getCurrentlyPlayingSongInServer(server).length > 0) {
                 core.joinVoiceChannel(client, server);
@@ -304,6 +318,8 @@ core.init(() => {
         }
     });
 
+    client.on("error", console.log);
+
     client.on("error", error => {
         core.logs.log("ERROR! On Error event: " + error, "DISCORD/EVENT", core.logs.LogFile.ERROR_LOG);
         core.discord.sendAdminWebhook("ERROR! On Error event: " + error);
@@ -313,7 +329,11 @@ core.init(() => {
         if (mysqlLoaded) {
             core.logs.log("Loaded all MySQL data", "MYSQL", core.logs.LogFile.MYSQL_LOG);
 
-            client.login(core.discord.DISCORD_TOKEN);
+            client.login(core.discord.DISCORD_TOKEN).then(() => {
+                core.logs.log("Logged in successfully to Discord", "DISCORD", core.logs.LogFile.LOAD_LOG);
+            }).catch(err => {
+                core.logs.log("ERROR! Could not login to Discord: " + err, "LOAD", core.logs.LogFile.ERROR_LOG);
+            });
             clearInterval(_i);
             _i = null;
         }

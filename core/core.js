@@ -66,7 +66,7 @@ async function init(callback) {
     callback();
 }
 
-function addSongToServer(song, server_id, video_id = "", saveToDb=false) {
+function addSongToServer(song, server_id, video_id = "", saveToDb=false, callback=false) {
     if (!serverSongs[server_id]) {
         serverSongs[server_id] = [];
     }
@@ -74,7 +74,7 @@ function addSongToServer(song, server_id, video_id = "", saveToDb=false) {
     if (!saveToDb) {
         serverSongs[server_id].push(song);
     } else {
-        let name = song[0].replace(/[\\$'"]/g, "\\$&");
+        let name = song[0].replace(/[\\$'"]/g, "\\$&");//.replace(/[\u0800-\uFFFF]/g, '');
         mysql.queryGetInsertedId(`INSERT INTO song(name, url, serverid) VALUES('${name}', '${song[1]}', ${server_id})`, id => {
             if (id >= 0) {
                 serverSongs[server_id].push([id].concat(song));
@@ -83,16 +83,18 @@ function addSongToServer(song, server_id, video_id = "", saveToDb=false) {
                     logs.log('Trying to get through API INFO ' + song[1], "CORE-addSongToServer", logs.LogFile.DOWNLOAD_LOG);
                     request(API_WRAPPER_URL + "info?f=videoId&u=" + encodeURIComponent(song[1]), (err, resp, body) => {
                         if (err) throw err;
-                        console.log(resp);
                         if (resp.statusCode === 200) {
                            body = JSON.parse(body);
-                           console.log(id + " -> " + body.videoId);
                            setVideoId(id, body.videoId);
+                           if (typeof callback === 'function')
+                            callback(id);
                         }
                     });
                 } else {
                     if (video_id.length > 0) {
                         setVideoId(id, video_id);
+                        if (typeof callback === 'function')
+                            callback(id);
                     }
                 }
             } else {
@@ -326,9 +328,41 @@ async function startLoopPlay(channel, refresh, songCommand) {
 
             if (channel.members.array().length <= 0 || (channel.members.array().length == 1 && channel.members.array()[0].id == CLIENT_ID)) return;
 
-            if (fs.existsSync(CACHE_PATH + getMD5(getVideoId(song[0])) + ".mp3")) {
-                let filename = getMD5(getVideoId(song[0]))+".mp3";
-                let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + filename));
+            if (!song[3]) { // not live video
+                if (fs.existsSync(CACHE_PATH + getMD5(getVideoId(song[0])) + ".mp3")) {
+                    let filename = getMD5(getVideoId(song[0]))+".mp3";
+                    let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + filename));
+                    //voiceDispatcher.setVolume(0.3);
+    
+                    serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
+                    serverVoiceConnection[channel.guild.id] = voiceConnection;
+    
+                    voiceDispatcher.once('finish', () => {
+                        voiceDispatcher.destroy();
+                        startLoopPlay(channel, false);
+                    });
+                } else {
+                    let hash_id = getMD5(getVideoId(song[0]));
+                    
+                    logs.log('Trying to download through API ' + songUrl, "SONG", logs.LogFile.DOWNLOAD_LOG);
+                    let pipe_proc = request(API_WRAPPER_URL + "audio?u=" + encodeURIComponent(songUrl)).pipe(fs.createWriteStream(CACHE_PATH + hash_id + ".mp3"));
+    
+                    pipe_proc.once('finish', () => {
+                        let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + hash_id + ".mp3"));
+                        //voiceDispatcher.setVolume(0.3);
+    
+                        serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
+                        serverVoiceConnection[channel.guild.id] = voiceConnection;
+    
+                        voiceDispatcher.once('finish', () => {
+                            voiceDispatcher.destroy();
+                            startLoopPlay(channel, false);
+                        });
+    
+                    });
+                }
+            } else { // live video bro
+                let voiceDispatcher = voiceConnection.play(ytdl(songUrl));
                 //voiceDispatcher.setVolume(0.3);
 
                 serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
@@ -338,27 +372,7 @@ async function startLoopPlay(channel, refresh, songCommand) {
                     voiceDispatcher.destroy();
                     startLoopPlay(channel, false);
                 });
-            } else {
-                let hash_id = getMD5(getVideoId(song[0]));
-                
-                logs.log('Trying to download through API ' + songUrl, "SONG", logs.LogFile.DOWNLOAD_LOG);
-                let pipe_proc = request(API_WRAPPER_URL + "audio?u=" + encodeURIComponent(songUrl)).pipe(fs.createWriteStream(CACHE_PATH + hash_id + ".mp3"));
-
-                pipe_proc.once('finish', () => {
-                    let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + hash_id + ".mp3"));
-                    //voiceDispatcher.setVolume(0.3);
-
-                    serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
-                    serverVoiceConnection[channel.guild.id] = voiceConnection;
-
-                    voiceDispatcher.once('finish', () => {
-                        voiceDispatcher.destroy();
-                        startLoopPlay(channel, false);
-                    });
-
-                });
             }
-
         } catch (e) {
             logs.log("WARNING! Could not connect to voice channel: (" + channel.guild.id + ") " + e, "ERROR", logs.LogFile.ERROR_LOG);
         }

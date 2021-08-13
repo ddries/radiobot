@@ -7,6 +7,7 @@ var conn = undefined;
 async function init() {
     conn = mysql.createConnection({
         host: config.mysql_host,
+        port: config.mysql_port,
         user: config.mysql_username,
         password: config.mysql_password,
         database: config.mysql_database

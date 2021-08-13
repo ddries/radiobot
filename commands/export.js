@@ -23,10 +23,10 @@ module.exports = {
             songArray.push(core.getVideoId(s[0]));
         }
 
-        let code = md5(JSON.stringify(songArray))
+        const code = md5(JSON.stringify(songArray));
+        const identifier = code.substr(0, 10);
 
-        m.reply("done! You can now import this server song list with: `" + core.getServerPrefix(m.guild.id) + "import " + code.substr(0, 10) + "`");
-
-        // must finish....
+        core.mysql.query("INSERT INTO exports(code, json) VALUES('" + identifier + "', '" + JSON.stringify(songArray) + "')");
+        m.reply("done! You can now import this server song list with: `" + core.discord.DEFAULT_DISCORD_PREFIX + "import " + identifier + "`");
     }
 };

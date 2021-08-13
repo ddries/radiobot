@@ -3,6 +3,7 @@ var core = require('./../core/core.js');
 
 module.exports = {
     name: "remove",
+    alias: ["rm"],
     description: "Removes the specified song from your server.",
     execute: (m, args, discord) => {
         if (!core.getServerSongs(m.guild.id) || core.getServerSongs(m.guild.id).length <= 0) {

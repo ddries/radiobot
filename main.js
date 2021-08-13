@@ -29,6 +29,18 @@ core.init(() => {
                 core.logs.log("Added song " + JSON.stringify([song.id, song.name, song.url]) + " to server " + song.serverid, "LOAD", core.logs.LogFile.LOAD_LOG);
             }
 
+            core.mysql.queryGetResult("SELECT * FROM song_lives", resLives => {
+                for (let song of resLives) {
+                    core.addSongToServer([song.id, song.name, song.url, true], song.serverid); // live video -> true
+                    core.addSongById(song.id, [song.id, song.name, song.url]);
+                    core.setVideoId(song.id, song.video_id, false);
+
+                    core.totalSongs++;
+
+                    core.logs.log("Added LIVE song " + JSON.stringify([song.id, song.name, song.url, true]) + " to server " + song.serverid, "LOAD", core.logs.LogFile.LOAD_LOG);
+                }
+            });
+
             core.mysql.queryGetResult("SELECT * FROM votes", resVotes => {
                 for (let userVote of resVotes) {
                     core.setUserVotes(userVote.userid, userVote.votes);
@@ -253,7 +265,7 @@ core.init(() => {
                                 if (voiceChannel == oldState.channelID) {
                                     if (newState.connection.status != 0) {
                                         let _i = client.setInterval(() => {
-                                            if (newState.connection.status == 0) {
+                                            if (newState.connection && newState.connection.status == 0) {
                                                 if (newState.connection.status == 0) {
                                                     setTimeout(() => {
                                                         newState.setChannel(oldState.channelID);

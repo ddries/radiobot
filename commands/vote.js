@@ -32,6 +32,10 @@ module.exports = {
                     {
                         "name": "PACK: 3, COST: 2 votes",
                         "value": "Enable song shuffle in your server to loop your songs randomly one after the other. **`Warning`**, this feature only works together with song queue. [`" + core.getServerPrefix(m.guild.id) + "shuffle`]"
+                    },
+                    {
+                        "name": "PACK: 4, Only via RadioBot Pay",
+                        "value": "Add a song of any length or even a live video to your server. Available through [RadioBot Pay](https://pay.theradiobot.com). [`" + core.getServerPrefix(m.guild.id) + "add`]"
                     }
                 );
 

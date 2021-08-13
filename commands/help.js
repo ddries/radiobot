@@ -43,7 +43,7 @@ module.exports = {
                 .setFooter("RadioBot")
                 .setTimestamp()
                 .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                .setDescription("RadioBot is an easy and completely free to use Discord bot. Add it to your server, pick up some songs and enjoy the best 24/7 music station!\n\nYou can add songs with `" + core.getServerPrefix(m.guild.id) + "add` and play them with `" + core.getServerPrefix(m.guild.id) + "song`. However, you have tons of more commands to play with.")
+                .setDescription("RadioBot is an easy and completely free to use Discord bot. Add it to your server, pick up some songs and enjoy the best 24/7 music station!\n\nYou can add songs with `" + core.getServerPrefix(m.guild.id) + "add` and play them with `" + core.getServerPrefix(m.guild.id) + "song`. Or simply use `" + core.getServerPrefix(m.guild.id) + "play` to quickly play the song you want!. However, you have tons of more commands to play with.")
                 .addFields(
                     {
                         "name": "Server Songs",
@@ -88,7 +88,7 @@ module.exports = {
                     .setFooter("RadioBot")
                     .setTimestamp()
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                    .setDescription(generarDescripcion(m, client, ["song", "search", "pause", "resume", "next", "np", "info"]));
+                    .setDescription(generarDescripcion(m, client, ["play", "song", "search", "pause", "resume", "next", "np", "info"]));
 
                 m.channel.send(e);
             } else if (cat === "lists") {
@@ -98,7 +98,7 @@ module.exports = {
                     .setFooter("RadioBot")
                     .setTimestamp()
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                    .setDescription(generarDescripcion(m, client, ["add", "remove", "list", "channel", "dc", "queue", "clear", "shuffle"]));
+                    .setDescription(generarDescripcion(m, client, ["play", "add", "remove", "list", "channel", "dc", "queue", "clear", "shuffle"]));
 
                 m.channel.send(e);
             } else if (cat === "util") {
@@ -108,7 +108,7 @@ module.exports = {
                     .setFooter("RadioBot")
                     .setTimestamp()
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                    .setDescription(generarDescripcion(m, client, ["help", "invite", "report", "cancel", "faq", "ping", "prefix"]));
+                    .setDescription(generarDescripcion(m, client, ["help", "invite", "report", "cancel", "faq", "ping", "prefix", "vote"]));
 
                 m.channel.send(e);
             } else {

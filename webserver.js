@@ -11,6 +11,59 @@ app.get('/', (req, res) => {
   res.sendStatus(200);
 });
 
+app.get('/pay/live', (req, res) => {
+  if (req.header('Authorization') == core.config.web_token) {
+    const userid = req.query.u;
+    if (!userid) {
+      res.sendStatus(400);  
+    } else {
+      core.addUserPack(userid, 4);
+    }
+  } else {
+    res.sendStatus(401);
+  }
+});
+
+app.get('/pay/queue', (req, res) => {
+  if (req.header('Authorization') == core.config.web_token) {
+    const userid = req.query.u;
+    if (!userid) {
+      res.sendStatus(400);  
+    } else {
+      core.addUserPack(userid, 2);
+    }
+  } else {
+    res.sendStatus(401);
+  }
+});
+
+app.get('/pay/votes', (req, res) => {
+  if (req.header('Authorization') == core.config.web_token) {
+    const userid = req.query.u;
+    const n = parseInt(req.query.n);
+    if (!userid || !n) {
+      res.sendStatus(400);  
+    } else {
+      core.setUserVotes(userid, core.getUserVotes(userid) + n);
+    }
+  } else {
+    res.sendStatus(401);
+  }
+});
+
+app.get('/pay/shuffle', (req, res) => {
+  if (req.header('Authorization') == core.config.web_token) {
+    const userid = req.query.u;
+    if (!userid) {
+      res.sendStatus(400);  
+    } else {
+      core.addUserPack(userid, 3);
+    }
+  } else {
+    res.sendStatus(401);
+  }
+});
+
 app.post('/vote', (req, res) => {
   if (req.header('Authorization') == core.config.web_token) {
     if (req.body.bot == "778044858760953866" && req.body.type == "upvote") {

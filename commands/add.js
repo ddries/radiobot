@@ -79,6 +79,17 @@ function addSongProcess(m) {
                                             }
                                         });
                                     } else {
+                                        if (core.userHasPack(m.author.id, 4)) {
+                                            m.reply("you need to redeem a pack type **4** (You have **" + core.getUserPackAmount(m.author.id, 4) + "**) to add a song of this length. Type yes/y to continue, or anything else to cancel.");
+                                            core.waitForUserResponse(m.author, m.channel, 0, confirm => {
+                                                if (confirm == 'yes' || confirm == 'y') {
+                                                    core.removeUserPack(m.author.id, 4);
+                                                    core.discord.sendWebhook(m.author.username + " (" + m.author.id + ") just used a **PACK 4**");
+                                                    
+                                                    core.addSongToServer([songName, songUrl, true], m.guild.id, body.videoId, true);
+                                                }
+                                            });
+                                        }
                                         core.discord.notify(core.discord.NotifyType.Error, m.channel, {
                                             description: "You can't add songs longer than 10 minutes (psst, use `" + core.getServerPrefix(m.guild.id) + "vote`)"
                                         });

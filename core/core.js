@@ -9,6 +9,8 @@ var fs = require('fs');
 const md5 = require('md5');
 const request = require('request');
 
+const Voice = require('@discordjs/voice');
+
 // guild id -> songs [id, name, url]
 var serverSongs = {};
 // song id -> song [id, name, url]
@@ -247,7 +249,7 @@ function joinVoiceChannel(client, serverid, refresh=true, songCommand=false) {
         client.guilds.fetch(serverid).then(g => {
             for (let c of g.channels.cache) {
                 if (c[0] == serverChannels[serverid]) {
-                    if (c[1].type == 'voice') {
+                    if (c[1].type == 'GUILD_VOICE') {
                         let idx = disconnectedServers.indexOf(serverid);
                         if (idx > -1)
                             disconnectedServers.splice(idx, 1);
@@ -324,21 +326,25 @@ async function startLoopPlay(channel, refresh, songCommand) {
 
     setTimeout(async () => {
         try {
-            let voiceConnection = await channel.join();
+            const connection = Voice.joinVoiceChannel({
+                channelId: channel.id,
+                guildId: channel.guild.id,
+                adapterCreator: channel.guild.voiceAdapterCreator
+            });
 
-            if (channel.members.array().length <= 0 || (channel.members.array().length == 1 && channel.members.array()[0].id == CLIENT_ID)) return;
+            const player = Voice.createAudioPlayer();
 
+            if (getCollectionSize(channel.members) <= 0 || (getCollectionSize(channel.members)== 1 && channel.members.first(0).id == CLIENT_ID)) return;
+            
             if (!song[3]) { // not live video
                 if (fs.existsSync(CACHE_PATH + getMD5(getVideoId(song[0])) + ".mp3")) {
                     let filename = getMD5(getVideoId(song[0]))+".mp3";
-                    let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + filename));
+                    const resource = Voice.createAudioResource(CACHE_PATH + filename);
+                    player.play(resource);
                     //voiceDispatcher.setVolume(0.3);
     
-                    serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
-                    serverVoiceConnection[channel.guild.id] = voiceConnection;
-    
-                    voiceDispatcher.once('finish', () => {
-                        voiceDispatcher.destroy();
+                    player.on(Voice.AudioPlayerStatus.Idle, () => {
+                        player.stop();
                         startLoopPlay(channel, false);
                     });
                 } else {
@@ -348,17 +354,14 @@ async function startLoopPlay(channel, refresh, songCommand) {
                     let pipe_proc = request(API_WRAPPER_URL + "audio?u=" + encodeURIComponent(songUrl)).pipe(fs.createWriteStream(CACHE_PATH + hash_id + ".mp3"));
     
                     pipe_proc.once('finish', () => {
-                        let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + hash_id + ".mp3"));
+                        const resource = Voice.createAudioResource(CACHE_PATH + hash_id + ".mp3");
+                        player.play(resource);
                         //voiceDispatcher.setVolume(0.3);
-    
-                        serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
-                        serverVoiceConnection[channel.guild.id] = voiceConnection;
-    
-                        voiceDispatcher.once('finish', () => {
-                            voiceDispatcher.destroy();
+        
+                        player.on(Voice.AudioPlayerStatus.Idle, () => {
+                            player.stop();
                             startLoopPlay(channel, false);
                         });
-    
                     });
                 }
             } else { // live video bro
@@ -452,7 +455,7 @@ function buildSongList(guild, discord, page = 1) {
 function sendSongListAwaitReaction(user, channel, guild, discord, callback, client = null, page=1) {
     let e = buildSongList(guild, discord, page);
     
-    channel.send(e).then(async _m => {
+    channel.send({ embeds: [e]}).then(async _m => {
         _m.react(":left:825081080532172851");
         _m.react(":right:825081129278111765");
 
@@ -525,7 +528,7 @@ function replyReport(id, discord, text) {
             .setDescription(text)
             .setColor('#00ba4a');
 
-            channel.send(e);
+            channel.send({ embeds: [e]});
             delete serverReports[id];
             return true;
         } else {
@@ -831,6 +834,14 @@ function getAllServers() {
     return servers;
 }
 
+function getServerCount(client) {
+    return [...client.guilds.cache.keys()].length;
+}
+
+function getCollectionSize(col) {
+    return [...col.keys()].length;
+}
+
 // https://github.com/fent/node-ytdl-core/issues/635
 function getFirefoxUserAgent() {
     let date = new Date()
@@ -909,6 +920,7 @@ module.exports = {
     getShuffle: getShuffle,
     setServerPrefix: setServerPrefix,
     getServerPrefix: getServerPrefix,
+    getServerCount: getServerCount,
 
     totalSongs: totalSongs,
 

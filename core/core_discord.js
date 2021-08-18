@@ -6,8 +6,8 @@ var logs = null;
 var core = null;
 
 const Discord = require('discord.js');
-const whStatus = new Discord.WebhookClient(config.discord_statuswh_id, config.discord_statuswh_token);
-const whAdmin = new Discord.WebhookClient(config.discord_adminwh_id, config.discord_adminwh_token);
+const whStatus = new Discord.WebhookClient({id: config.discord_statuswh_id, token: config.discord_statuswh_token});
+const whAdmin = new Discord.WebhookClient({id: config.discord_adminwh_id, token: config.discord_adminwh_token});
 
 const DISCORD_TOKEN = config.discord_token;
 const DEFAULT_DISCORD_PREFIX = config.discord_prefix;
@@ -37,9 +37,9 @@ function messageParser(client, discord) {
         client.aliases[command.name] = command.alias;
     }
 
-    client.on('message', m => {
+    client.on('messageCreate', m => {
         if (m.author.bot) return;
-        if (m.channel.type === 'dm') return;
+        if (m.channel.type === 'DM') return;
         
         core.setServerLastUsedChannel(m.guild.id, m.channel.id);
 
@@ -129,7 +129,7 @@ function notify(notifyType, channel, data) {
         e.setFooter("RadioBot")
     }
 
-    channel.send(e);
+    channel.send({ embeds: [e]});
 }
 
 function setActivity(client, activity) {

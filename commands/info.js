@@ -26,7 +26,7 @@ module.exports = {
                 description: "USAGE: **" + core.getServerPrefix(m.guild.id) + "info [number]**. Use **" + core.getServerPrefix(m.guild.id) + "list** to see all songs."
             });
             return;
-            m.channel.send("( You can also use **" + core.getServerPrefix(m.guild.id) + "info [number]** )");
+            m.channel.send({content: "( You can also use **" + core.getServerPrefix(m.guild.id) + "info [number]** )"});
             core.sendSongListAwaitReaction(m.author, m.channel, m.guild, discord, reaction => {
                 for (let i = 0; i < core.numbers.length; i++) {
                     if (core.numbers[i] == reaction.emoji.name) {

@@ -78,7 +78,7 @@ module.exports = {
                     }
                 );
 
-            m.channel.send(e);
+            m.channel.send({ embeds: [e]});
         } else if (args.length == 1) {
             let cat = args[0];
             if (cat === "songs") {
@@ -90,7 +90,7 @@ module.exports = {
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
                     .setDescription(generarDescripcion(m, client, ["play", "song", "search", "pause", "resume", "next", "np", "info"]));
 
-                m.channel.send(e);
+                m.channel.send({ embeds: [e] });
             } else if (cat === "lists") {
                 let e = new discord.MessageEmbed()
                     .setURL("https://theradiobot.com")
@@ -100,7 +100,7 @@ module.exports = {
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
                     .setDescription(generarDescripcion(m, client, ["play", "add", "remove", "list", "channel", "dc", "queue", "clear", "shuffle"]));
 
-                m.channel.send(e);
+                m.channel.send({ embeds: [e]});
             } else if (cat === "util") {
                 let e = new discord.MessageEmbed()
                     .setURL("https://theradiobot.com")
@@ -110,7 +110,7 @@ module.exports = {
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
                     .setDescription(generarDescripcion(m, client, ["help", "invite", "report", "cancel", "faq", "ping", "prefix", "vote"]));
 
-                m.channel.send(e);
+                m.channel.send({ embeds: [e]});
             } else {
                 core.discord.notify(core.discord.NotifyType.Error, m.channel, {
                     description: "We could not find that category! (" + core.getServerPrefix(m.guild.id) + "help)"

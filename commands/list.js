@@ -28,7 +28,7 @@ module.exports = {
                 msg.edit(core.buildSongList(m.guild, discord, page));
             }, client, page);
         } else {
-            m.channel.send(core.buildSongList(m.guild, discord));
+            m.channel.send({ embeds: [core.buildSongList(m.guild, discord)]});
         }
     }
 };

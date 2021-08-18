@@ -23,6 +23,6 @@ module.exports = {
         embed.addField("Help! Songs are playing one after the other and they are not repeating.", "This is because song queue is enabled in your server. Use r!queue or the alias r!q to enable/disable this feature.");
         embed.addField("Help! My problem is not listed here.", "These are the most common questions, so your problem may not be listed in this page. If it's the case, don't hesitate to use the multiple channels we have to receive your feedback. You can use the Reviews section in [Top.GG](https://top.gg/bot/778044858760953866), join our [support server](https://discord.gg/pxHzUVGfb5), send a [contact ticket](https://theradiobot.com), or use our embedded report system with r!report [message]. We will reply as soon as possible!");
 
-        m.channel.send(embed);
+        m.channel.send({ embeds: [embed]});
     }
 };

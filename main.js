@@ -1,5 +1,12 @@
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const client = new Discord.Client({
+    intents: [
+        Discord.Intents.FLAGS.GUILDS,
+        Discord.Intents.FLAGS.GUILD_MESSAGES,
+        Discord.Intents.FLAGS.GUILD_VOICE_STATES,
+        Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+    ]
+});
 
 const DBL = require("dblapi.js");
 
@@ -8,7 +15,7 @@ var web = require('./webserver.js');
 
 const dbl = new DBL(core.config.dbl_token, client);
 
-const DEBUG = false;
+const DEBUG = true;
 
 core.init(() => {
     core.logs.log("Initialized core modules", "LOAD", core.logs.LogFile.LOAD_LOG);
@@ -115,7 +122,7 @@ core.init(() => {
             setTimeout(() => {
                 core.logs.log("Loaded (" + core.getAllServers().length + ") server(s).", "LOAD", core.logs.LogFile.LOAD_LOG);
                 mysqlLoaded = true;
-            }, 20*1000);
+            }, DEBUG ? 40*1000 : 20*1000);
         });
     });
 
@@ -134,11 +141,11 @@ core.init(() => {
         if (!DEBUG) {
             core.discord.noticeOnline();
         }
-        client.setInterval(() => {
-            core.discord.setActivity(client, core.discord.DEFAULT_DISCORD_PREFIX + "help | " + client.guilds.cache.array().length + " servers | " + core.totalSongs + " songs");
+        setInterval(() => {
+            core.discord.setActivity(client, core.discord.DEFAULT_DISCORD_PREFIX + "help | " + core.getServerCount(client) + " servers | " + core.totalSongs + " songs");
         }, 7200);
         if (!DEBUG) {
-            client.setTimeout(() => {
+            setTimeout(() => {
                 core.logs.log("Cleaning removed servers", "COMMON", core.logs.LogFile.COMMON_LOG);
     
                 for (let _s of core.getAllServers()) {
@@ -154,9 +161,9 @@ core.init(() => {
         }
 
         if (!DEBUG) {
-            dbl.postStats(client.guilds.cache.array().length);
-            client.setInterval(() => {
-                dbl.postStats(client.guilds.cache.array().length);
+            dbl.postStats(core.getServerCount(client));
+            setInterval(() => {
+                dbl.postStats(core.getServerCount(client));
             }, 1800 * 1000);
 
             core.logs.log('Trying to get through API', "HEARTBEAT", core.logs.LogFile.DOWNLOAD_LOG);
@@ -165,7 +172,7 @@ core.init(() => {
                     core.discord.sendAdminWebhook("COULD NOT VERIFY API WORKING STATUS!! PLEASE CHECK [RADIOBOT YOUTUBE API WRAPPER](" + core.API_WRAPPER_URL + ").");
                 }
             });
-            client.setInterval(() => {
+            setInterval(() => {
                 core.logs.log('Trying to get through API', "HEARTBEAT", core.logs.LogFile.DOWNLOAD_LOG);
                 core.request(core.API_WRAPPER_URL, (err, resp, body) => {
                     if (resp.statusCode !== 200) {
@@ -264,7 +271,7 @@ core.init(() => {
                             if (voiceChannel.length > 0) {
                                 if (voiceChannel == oldState.channelID) {
                                     if (newState.connection.status != 0) {
-                                        let _i = client.setInterval(() => {
+                                        let _i = setInterval(() => {
                                             if (newState.connection && newState.connection.status == 0) {
                                                 if (newState.connection.status == 0) {
                                                     setTimeout(() => {
@@ -301,7 +308,7 @@ core.init(() => {
                         let channel_id = core.getServerLastUsedChannel(newState.member.guild.id);
                         if (channel_id.length > 0) {
                             client.channels.fetch(channel_id).then(c => {
-                                c.send(e);
+                                c.send({ embeds: [e] });
                             }).catch(err => {
                                 core.logs.log("ERROR! Sending message to server " + newState.member.guild.id + " to channel " + channel_id + " at voiceStatusUpdate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
                             });

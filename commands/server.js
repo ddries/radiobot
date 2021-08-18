@@ -8,7 +8,7 @@ module.exports = {
     execute: (m, args, discord, client) => {
         try {
             if (m.author.id == core.config.admin_id) {
-                m.reply("the bot is in approximately " + client.guilds.cache.array().length + " servers (" + core.getAllServers().length + ").");
+                m.reply("the bot is in approximately " + core.getServerCount(client) + " servers (" + core.getAllServers().length + ").");
                 m.react('✅');
             }
         } catch (e) {

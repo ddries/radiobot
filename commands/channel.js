@@ -34,7 +34,7 @@ module.exports = {
 
             client.guilds.fetch(m.guild.id).then(g => {
                 for (let c of g.channels.cache) {
-                    if (c[1].type == 'voice' && (c[1].name.toLowerCase() === name.toLowerCase() || c[1].name.toLowerCase().includes(name.toLowerCase()))) {
+                    if (c[1].type == 'GUILD_VOICE' && (c[1].name.toLowerCase() === name.toLowerCase() || c[1].name.toLowerCase().includes(name.toLowerCase()))) {
                         let id = c[1].id;
 
                         if (!c[1].permissionsFor(client.user.id).has('CONNECT', false)) {

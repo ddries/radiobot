@@ -6,8 +6,9 @@ var logs = null;
 var core = null;
 
 const Discord = require('discord.js');
-const whStatus = new Discord.WebhookClient(config.discord_statuswh_id, config.discord_statuswh_token);
-const whAdmin = new Discord.WebhookClient(config.discord_adminwh_id, config.discord_adminwh_token);
+const whStatus = new Discord.WebhookClient({id: config.discord_statuswh_id, token: config.discord_statuswh_token});
+const whAdmin = new Discord.WebhookClient({id: config.discord_adminwh_id, token: config.discord_adminwh_token});
+const whLogs = new Discord.WebhookClient({id: config.discord_logswh_id, token: config.discord_logswh_token});
 
 const DISCORD_TOKEN = config.discord_token;
 const DEFAULT_DISCORD_PREFIX = config.discord_prefix;
@@ -37,9 +38,9 @@ function messageParser(client, discord) {
         client.aliases[command.name] = command.alias;
     }
 
-    client.on('message', m => {
+    client.on('messageCreate', m => {
         if (m.author.bot) return;
-        if (m.channel.type === 'dm') return;
+        if (m.channel.type === 'DM') return;
         
         core.setServerLastUsedChannel(m.guild.id, m.channel.id);
 
@@ -129,7 +130,7 @@ function notify(notifyType, channel, data) {
         e.setFooter("RadioBot")
     }
 
-    channel.send(e);
+    channel.send({ embeds: [e]});
 }
 
 function setActivity(client, activity) {
@@ -148,7 +149,7 @@ function noticeOnline() {
             e.setDescription("RadioBot is now online. Could not load API on " + core.API_WRAPPER_URL);
         }
 
-        whStatus.send('', {
+        whStatus.send({
             embeds: [e],
             username: 'RadioBot Status',
             avatarURL: 'https://cdn.discordapp.com/attachments/490470376380432389/793454290727337984/icon.jpg'
@@ -161,7 +162,7 @@ function sendWebhook(text) {
     .setDescription(text)
     .setColor('#00ba4a');
 
-    whStatus.send('', {
+    whStatus.send({
         embeds: [e],
         username: 'RadioBot Status',
         avatarURL: 'https://cdn.discordapp.com/attachments/490470376380432389/793454290727337984/icon.jpg'
@@ -173,9 +174,21 @@ function sendAdminWebhook(text) {
     .setDescription(text)
     .setColor('#fcba03');
 
-    whAdmin.send('', {
+    whAdmin.send({
         embeds: [e],
         username: 'RadioBot Admin',
+        avatarURL: 'https://cdn.discordapp.com/attachments/490470376380432389/793454290727337984/icon.jpg'
+    });
+}
+
+function sendLogWebhook(text) {
+    let e = new Discord.MessageEmbed()
+    .setDescription(text)
+    .setColor('#fcba03');
+
+    whLogs.send({
+        embeds: [e],
+        username: 'RadioBot Logs',
         avatarURL: 'https://cdn.discordapp.com/attachments/490470376380432389/793454290727337984/icon.jpg'
     });
 }
@@ -194,6 +207,7 @@ module.exports = {
     getCommandFiles: getCommandFiles,
     sendWebhook: sendWebhook,
     sendAdminWebhook: sendAdminWebhook,
+    sendLogWebhook: sendLogWebhook,
 
     NotifyType: NotifyType,
     DISCORD_TOKEN: DISCORD_TOKEN,

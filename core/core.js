@@ -9,6 +9,8 @@ var fs = require('fs');
 const md5 = require('md5');
 const request = require('request');
 
+const Voice = require('@discordjs/voice');
+
 // guild id -> songs [id, name, url]
 var serverSongs = {};
 // song id -> song [id, name, url]
@@ -17,10 +19,8 @@ var songsById = {};
 var currentlyPlayingSongs = {};
 // guild id -> channel id
 var serverChannels = {};
-// guild id -> voice conn
-var serverVoiceConnection = {};
-// guild id -> voice dis
-var serverVoiceDispatcher = {};
+// guild id -> subscription
+var serverVoiceSubscriptions = {};
 // guild id -> [ user id, callback ]
 var serverUsersWaitingResponse = {};
 // guild id -> channel id
@@ -56,7 +56,7 @@ const MAX_SERVER_SONGS = 10;
 const CACHE_PATH = "cache/";
 var TECH_DIF = false;
 var API_WRAPPER_URL = config.api_url;
-var CLIENT_ID = "";
+var CLIENT_Id = "";
 const SONGS_PER_EMBED = 12;
 
 async function init(callback) {
@@ -222,14 +222,31 @@ function setServerLastUsedChannel(serverid, channelid) {
 }
 
 function pauseCurrentlyPlayingSong(serverid) {
-    if (serverVoiceDispatcher.hasOwnProperty(serverid)) {
-        serverVoiceDispatcher[serverid].pause();
+    const s = serverVoiceSubscriptions[serverid];
+    if (s) {
+        s.player.pause();
     }
+    // if (serverVoiceDispatcher.hasOwnProperty(serverid)) {
+    //     serverVoiceDispatcher[serverid].pause();
+    // }
 }
 
 function resumeCurrentlyPlayingSong(serverid) {
-    if (serverVoiceDispatcher.hasOwnProperty(serverid)) {
-        serverVoiceDispatcher[serverid].resume();
+    const s = serverVoiceSubscriptions[serverid];
+    if (s) {
+        s.player.unpause();
+    }
+    // if (serverVoiceDispatcher.hasOwnProperty(serverid)) {
+    //     serverVoiceDispatcher[serverid].resume();
+    // }
+}
+
+function isCurrentlyPlayingSongPaused(serverid) {
+    const s = serverVoiceSubscriptions[serverid];
+    if (s) {
+        return s.player.state == Voice.AudioPlayerPausedState;
+    } else {
+        return false;
     }
 }
 
@@ -242,24 +259,35 @@ function isServerDisconnected(serverid) {
     return disconnectedServers.indexOf(serverid) > -1;
 }
 
-function joinVoiceChannel(client, serverid, refresh=true, songCommand=false) {
-    if (serverChannels.hasOwnProperty(serverid)) {
-        client.guilds.fetch(serverid).then(g => {
-            for (let c of g.channels.cache) {
-                if (c[0] == serverChannels[serverid]) {
-                    if (c[1].type == 'voice') {
-                        let idx = disconnectedServers.indexOf(serverid);
-                        if (idx > -1)
-                            disconnectedServers.splice(idx, 1);
+function joinVoiceChannel(client, g, refresh=true, songCommand=false) {
+    if (serverChannels.hasOwnProperty(g.id)) {
+        for (let c of g.channels.cache) {
+            if (c[0] == serverChannels[g.id]) {
+                if (c[1].type == 'GUILD_VOICE') {
+                    let idx = disconnectedServers.indexOf(g.id);
+                    if (idx > -1)
+                        disconnectedServers.splice(idx, 1);
 
-                        startLoopPlay(c[1], refresh, songCommand);
-                        break;
+                    if (!c[1].members || getCollectionSize(c[1].members) <= 0 || (getCollectionSize(c[1].members) == 1 && c[1].members.first().id == CLIENT_Id)) {
+                        if (!Voice.getVoiceConnection(c[1].guild.id)) {
+                            Voice.joinVoiceChannel({
+                                channelId: c[1].id,
+                                guildId: c[1].guild.id,
+                                adapterCreator: c[1].guild.voiceAdapterCreator
+                            });
+                            continue;
+                        }
                     }
+                    // } else {
+                    //     console.log(c[1].members);
+                    // }
+
+                    // console.log("Start (1)")
+                    startLoopPlay(c[1], refresh, songCommand);
+                    break;
                 }
             }
-        }).catch(err => {
-            logs.log("ERROR! Fetching guild " + serverid + " at joinVoiceChannel " + err, "DISCORD", logs.LogFile.ERROR_LOG);
-        });
+        }
     }
 }
 
@@ -271,21 +299,23 @@ function removeServer(serverid) {
     delete serverSongs[serverid];
     delete currentlyPlayingSongs[serverid];
     delete serverChannels[serverid];
-    delete serverVoiceConnection[serverid];
-    delete serverVoiceDispatcher[serverid];
+    // delete serverVoiceConnection[serverid];
+    // delete serverVoiceDispatcher[serverid];
+    delete serverVoiceSubscriptions[serverid];
     delete serverLastUsedChannel[serverid];
     delete serverUsersWaitingResponse[serverid];
     
     let idx = disconnectedServers.indexOf(serverid);
     if (idx > -1) disconnectedServers.splice(idx, 1);
 
-    logs.log("Removed server ID " + serverid, "COMMON", logs.LogFile.COMMON_LOG);
+    logs.log("Removed server Id " + serverid, "COMMON", logs.LogFile.COMMON_LOG);
 }
 
 async function startLoopPlay(channel, refresh, songCommand) {
     let songUrl = "";
     let song = [];
 
+    logs.log('Called startLoopPlay in server ' + channel.guild.name + " (" + channel.guild.id + ")", 'COMMON', logs.LogFile.COMMON_LOG);
 
     if (getQueue(channel.guild.id) != -1 && getQueue(channel.guild.id) && !songCommand) {
         if (getServerSongs(channel.guild.id).length > 0) {
@@ -304,14 +334,34 @@ async function startLoopPlay(channel, refresh, songCommand) {
         return;
     }
 
+    const s = serverVoiceSubscriptions[channel.guild.id];
+    if (s) {
+        s.unsubscribe();
+        delete serverVoiceSubscriptions[channel.guild.id]
+        // s.player.stop();
+        // s.connection.destroy();
+    }
+
     if (refresh) {
-        if (serverVoiceDispatcher[channel.guild.id]) {
-            serverVoiceDispatcher[channel.guild.id].destroy(); /*.catch(_ => { logs.log("ERROR! Could not destroy voice dispatcher " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });*/
+        const s = serverVoiceSubscriptions[channel.guild.id];
+        if (s) {
+            try {
+                s.connection.destroy();
+                delete serverVoiceSubscriptions[channel.guild.id];
+            } catch(e__) {
+                delete serverVoiceSubscriptions[channel.guild.id];
+            }
+            // s.player.stop();
+            // s.connection.destroy();
         }
+        // }
+        // if (serverVoiceDispatcher[channel.guild.id]) {
+        //     serverVoiceDispatcher[channel.guild.id].destroy(); /*.catch(_ => { logs.log("ERROR! Could not destroy voice dispatcher " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });*/
+        // }
     
-        if (serverVoiceConnection[channel.guild.id]) {
-            serverVoiceConnection[channel.guild.id].disconnect(); /*.catch(_ => { logs.log("ERROR! Could not disconnect voice connection " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });*/
-        }
+        // if (serverVoiceConnection[channel.guild.id]) {
+        //     serverVoiceConnection[channel.guild.id].disconnect(); /*.catch(_ => { logs.log("ERROR! Could not disconnect voice connection " + channel.guild.id, "DISCORD", logs.LogFile.ERROR_LOG); });*/
+        // }
     }
 
     try {
@@ -324,55 +374,79 @@ async function startLoopPlay(channel, refresh, songCommand) {
 
     setTimeout(async () => {
         try {
-            let voiceConnection = await channel.join();
+            let connection;
+            if (!Voice.getVoiceConnection(channel.guild.id)) {
+                connection = Voice.joinVoiceChannel({
+                    channelId: channel.id,
+                    guildId: channel.guild.id,
+                    adapterCreator: channel.guild.voiceAdapterCreator
+                });
+            } else {
+                connection = Voice.getVoiceConnection(channel.guild.id);
+            }
 
-            if (channel.members.array().length <= 0 || (channel.members.array().length == 1 && channel.members.array()[0].id == CLIENT_ID)) return;
+            const s = serverVoiceSubscriptions[channel.guild.id];
+            if (s) {
+                s.unsubscribe();
+            }
+
+            if (getCollectionSize(channel.members) <= 0 || (getCollectionSize(channel.members)== 1 && channel.members.first().id == CLIENT_Id)) return;
+
+            const player = Voice.createAudioPlayer();
+
+            logs.log('Playing song in server ' + channel.guild.name + " (" + channel.guild.id + ")", "COMMON", logs.LogFile.COMMON_LOG);
+            // discord.sendLogWebhook('Playing song in server ' + channel.guild.name + " (" + channel.guild.id + ")");
 
             if (!song[3]) { // not live video
                 if (fs.existsSync(CACHE_PATH + getMD5(getVideoId(song[0])) + ".mp3")) {
                     let filename = getMD5(getVideoId(song[0]))+".mp3";
-                    let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + filename));
+                    const resource = Voice.createAudioResource(CACHE_PATH + filename);
+                    player.play(resource);
+                    const s = connection.subscribe(player);
+                    if (s) {
+                        serverVoiceSubscriptions[channel.guild.id] = s;
+
+                        player.on(Voice.AudioPlayerStatus.Idle, () => {
+                            player.stop();
+                            startLoopPlay(channel, false);
+                        });
+                    }
                     //voiceDispatcher.setVolume(0.3);
-    
-                    serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
-                    serverVoiceConnection[channel.guild.id] = voiceConnection;
-    
-                    voiceDispatcher.once('finish', () => {
-                        voiceDispatcher.destroy();
-                        startLoopPlay(channel, false);
-                    });
+
                 } else {
                     let hash_id = getMD5(getVideoId(song[0]));
-                    
                     logs.log('Trying to download through API ' + songUrl, "SONG", logs.LogFile.DOWNLOAD_LOG);
                     let pipe_proc = request(API_WRAPPER_URL + "audio?u=" + encodeURIComponent(songUrl)).pipe(fs.createWriteStream(CACHE_PATH + hash_id + ".mp3"));
     
                     pipe_proc.once('finish', () => {
-                        let voiceDispatcher = voiceConnection.play(fs.createReadStream(CACHE_PATH + hash_id + ".mp3"));
+                        const resource = Voice.createAudioResource(CACHE_PATH + hash_id + ".mp3");
+                        player.play(resource);
+                        const s = connection.subscribe(player);
+                        if (s) {
+                            serverVoiceSubscriptions[channel.guild.id] = s;
+
+                            player.on(Voice.AudioPlayerStatus.Idle, () => {
+                                player.stop();
+                                startLoopPlay(channel, false);
+                            });
+                        }
                         //voiceDispatcher.setVolume(0.3);
-    
-                        serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
-                        serverVoiceConnection[channel.guild.id] = voiceConnection;
-    
-                        voiceDispatcher.once('finish', () => {
-                            voiceDispatcher.destroy();
-                            startLoopPlay(channel, false);
-                        });
     
                     });
                 }
-            } else { // live video bro
-                let voiceDispatcher = voiceConnection.play(ytdl(songUrl));
-                //voiceDispatcher.setVolume(0.3);
-
-                serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
-                serverVoiceConnection[channel.guild.id] = voiceConnection;
-
-                voiceDispatcher.once('finish', () => {
-                    voiceDispatcher.destroy();
-                    startLoopPlay(channel, false);
-                });
             }
+            // } else { // live video bro
+            //     let voiceDispatcher = voiceConnection.play(ytdl(songUrl));
+            //     //voiceDispatcher.setVolume(0.3);
+
+            //     serverVoiceDispatcher[channel.guild.id] = voiceDispatcher;
+            //     serverVoiceConnection[channel.guild.id] = voiceConnection;
+
+            //     voiceDispatcher.once('finish', () => {
+            //         voiceDispatcher.destroy();
+            //         startLoopPlay(channel, false);
+            //     });
+            // }
         } catch (e) {
             logs.log("WARNING! Could not connect to voice channel: (" + channel.guild.id + ") " + e, "ERROR", logs.LogFile.ERROR_LOG);
         }
@@ -380,15 +454,27 @@ async function startLoopPlay(channel, refresh, songCommand) {
 }
 
 function leaveVoiceChannel(serverid, clearPlayingSong=true) {
-    if (serverVoiceDispatcher.hasOwnProperty(serverid)) {
-        serverVoiceDispatcher[serverid].destroy();
-        delete serverVoiceDispatcher[serverid];
+    const conn = Voice.getVoiceConnection(serverid);
+    if (conn) {
+        conn.destroy();
     }
+
+    const s = serverVoiceSubscriptions[serverid];
+    if (s) {
+        s.unsubscribe();
+        s.player.stop();
+        delete serverVoiceSubscriptions[serverid];
+    }
+
+    // if (serverVoiceDispatcher.hasOwnProperty(serverid)) {
+    //     serverVoiceDispatcher[serverid].destroy();
+    //     delete serverVoiceDispatcher[serverid];
+    // }
     
-    if (serverVoiceConnection.hasOwnProperty(serverid)) {
-        serverVoiceConnection[serverid].disconnect();
-        delete serverVoiceConnection[serverid];
-    }
+    // if (serverVoiceConnection.hasOwnProperty(serverid)) {
+    //     serverVoiceConnection[serverid].disconnect();
+    //     delete serverVoiceConnection[serverid];
+    // }
 
     if (clearPlayingSong)
         clearCurrentlyPlayingSongInServer(serverid);
@@ -452,7 +538,7 @@ function buildSongList(guild, discord, page = 1) {
 function sendSongListAwaitReaction(user, channel, guild, discord, callback, client = null, page=1) {
     let e = buildSongList(guild, discord, page);
     
-    channel.send(e).then(async _m => {
+    channel.send({ embeds: [e]}).then(async _m => {
         _m.react(":left:825081080532172851");
         _m.react(":right:825081129278111765");
 
@@ -525,7 +611,7 @@ function replyReport(id, discord, text) {
             .setDescription(text)
             .setColor('#00ba4a');
 
-            channel.send(e);
+            channel.send({ embeds: [e]});
             delete serverReports[id];
             return true;
         } else {
@@ -625,7 +711,7 @@ function setVideoId(song_id, video_id, saveToDb=true) {
         mysql.query("UPDATE song SET video_id='" + video_id + "' WHERE id=" + song_id);
 
     songsVideoId[song_id] = video_id;
-    logs.log("Set video ID " + video_id + " of song ID (" + song_id + ")", "COMMON", logs.LogFile.COMMON_LOG);
+    logs.log("Set video Id " + video_id + " of song Id (" + song_id + ")", "COMMON", logs.LogFile.COMMON_LOG);
 }
 
 function updateLastPlayTime(serverid, songId) {
@@ -779,9 +865,14 @@ function getServerMaxSongs(serverid) {
 }
 
 function stopPlayingCurrentSong(serverid) {
-    if (serverVoiceDispatcher[serverid]) {
-        serverVoiceDispatcher[serverid].destroy();
-    }
+    const s = serverVoiceSubscriptions[serverid];
+    if (!s) return;
+
+    s.unsubscribe();
+    s.player.stop();
+    // if (serverVoiceDispatcher[serverid]) {
+    //     serverVoiceDispatcher[serverid].destroy();
+    // }
 }
 
 function getUnixTimeNow() {
@@ -831,6 +922,14 @@ function getAllServers() {
     return servers;
 }
 
+function getServerCount(client) {
+    return [...client.guilds.cache.keys()].length;
+}
+
+function getCollectionSize(col) {
+    return [...col.keys()].length;
+}
+
 // https://github.com/fent/node-ytdl-core/issues/635
 function getFirefoxUserAgent() {
     let date = new Date()
@@ -838,8 +937,8 @@ function getFirefoxUserAgent() {
     return `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:${version} Gecko/20100101 Firefox/${version}`
 }
 
-function setClientId(_CLIENT_ID) {
-    CLIENT_ID = _CLIENT_ID;
+function setClientId(_CLIENT_Id) {
+    CLIENT_Id = _CLIENT_Id;
 }
 
 module.exports = {
@@ -875,6 +974,7 @@ module.exports = {
     getServerLastUsedChannel: getServerLastUsedChannel,
     setServerLastUsedChannel: setServerLastUsedChannel,
     pauseCurrentlyPlayingSong: pauseCurrentlyPlayingSong,
+    isCurrentlyPlayingSongPaused: isCurrentlyPlayingSongPaused,
     resumeCurrentlyPlayingSong: resumeCurrentlyPlayingSong,
     disconnectFromVoiceChannel: disconnectFromVoiceChannel,
     isServerDisconnected: isServerDisconnected,
@@ -909,6 +1009,8 @@ module.exports = {
     getShuffle: getShuffle,
     setServerPrefix: setServerPrefix,
     getServerPrefix: getServerPrefix,
+    getServerCount: getServerCount,
+    getCollectionSize: getCollectionSize,
 
     totalSongs: totalSongs,
 

@@ -14,7 +14,7 @@ module.exports = {
         }
 
         let channel = core.getServerChannel(m.guild.id);
-        if (!m.member.voice.channelID) {
+        if (!m.member.voice.channelId) {
             if (!channel || channel.length <= 0) {
                 core.discord.notify(core.discord.NotifyType.Error, m.channel, {
                     description: "I'm not configured in this server yet! `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]` or join a voice channel and use `" + core.getServerPrefix(m.guild.id) + "song` again"
@@ -24,13 +24,13 @@ module.exports = {
             }
         } else {
             if (core.isServerDisconnected(m.guild.id) || (!channel || channel.length <= 0)) {
-                core.setServerChannel(m.guild.id, m.member.voice.channelID, true);
-                client.channels.fetch(m.member.voice.channelID).then(c => {
+                core.setServerChannel(m.guild.id, m.member.voice.channelId, true);
+                client.channels.fetch(m.member.voice.channelId).then(c => {
                     core.discord.notify(core.discord.NotifyType.Success, m.channel, {
                         description: "Automatically updated fixed channel to **" + c.name + "**. You can change it with `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]`"
                     });
                 }).catch(err => {
-                    core.logs.log("ERROR! Fetching channel in server " + m.guild.id + " channel " + m.member.voice.channelID + " in command song " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+                    core.logs.log("ERROR! Fetching channel in server " + m.guild.id + " channel " + m.member.voice.channelId + " in command song " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
                 });
             }
         }
@@ -66,15 +66,15 @@ module.exports = {
                 });
             }
 
-            core.logs.log("Changed song playing from " + m.guild.id + " to (ID) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
+            core.logs.log("Changed song playing from " + m.guild.id + " to (Id) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
 
-            core.joinVoiceChannel(m.client, m.guild.id, nueva, true);
+            core.joinVoiceChannel(m.client, m.guild, nueva, true);
         } else {
             core.discord.notify(core.discord.NotifyType.Error, m.channel, {
                 description: "USAGE: **" + core.getServerPrefix(m.guild.id) + "song [number]**. Use **" + core.getServerPrefix(m.guild.id) + "list** to see all songs."
             });
             return;
-            m.channel.send("( You can also use **" + core.getServerPrefix(m.guild.id) + "song [number]** )");
+            m.channel.send({content: "( You can also use **" + core.getServerPrefix(m.guild.id) + "song [number]** )"});
             try {
                 core.sendSongListAwaitReaction(m.author, m.channel, m.guild, discord, reaction => {
                     if (!reaction || !reaction.emoji) return;
@@ -104,9 +104,9 @@ module.exports = {
                                 });
                             }
 
-                            core.logs.log("Changed song playing from " + m.guild.id + " to (ID) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
+                            core.logs.log("Changed song playing from " + m.guild.id + " to (Id) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
         
-                            core.joinVoiceChannel(m.client, m.guild.id, newSong, true);
+                            core.joinVoiceChannel(m.client, m.guild, newSong, true);
                             return;
                         }
                     }

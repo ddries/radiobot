@@ -39,7 +39,7 @@ module.exports = {
                     }
                 );
 
-                m.channel.send(e);
+                m.channel.send({ embeds: [e]});
         } catch (e) {
             core.logs.log("ERROR! Executing vote command: " + e, "DISCORD", core.logs.LogFile.ERROR_LOG);
         }

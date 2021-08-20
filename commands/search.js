@@ -71,7 +71,7 @@ module.exports = {
                 embed.setImage(results[0].bestThumbnail.url);
                 embed.setDescription("Right click the title to get the link.\n**Not what you were looking for?** Type `n` or `next`.");
 
-                m.channel.send(embed).then(_ => {
+                m.channel.send({ embeds: [embed]}).then(_ => {
                     process_next(0, results, discord, _, m);
                 });
             }); 

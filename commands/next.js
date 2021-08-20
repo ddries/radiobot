@@ -39,8 +39,8 @@ module.exports = {
             description: text
         });
 
-        core.logs.log("Changed song playing from " + m.guild.id + " to (ID) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
+        core.logs.log("Changed song playing from " + m.guild.id + " to (Id) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
 
-        core.joinVoiceChannel(m.client, m.guild.id, false, true);
+        core.joinVoiceChannel(m.client, m.guild, false, true);
     }
 };

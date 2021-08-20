@@ -36,7 +36,7 @@ module.exports = {
 
             e.setDescription(desc);
 
-            m.channel.send(e);
+            m.channel.send({ embeds: [e]});
         } catch (e) {
             core.logs.log("ERROR! Executing packs command: " + e, "DISCORD", core.logs.LogFile.ERROR_LOG);
         }

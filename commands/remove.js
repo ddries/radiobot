@@ -46,11 +46,11 @@ module.exports = {
                 description: "The song **" + name + "** has been removed from **" + m.guild.name + "**"
             });
 
-            core.logs.log("Removed song (ID) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
+            core.logs.log("Removed song (Id) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
 
             if (ni >= 0 && core.getServerSongs(m.guild.id).length > 0) {
                 core.setCurrentlyPlayingSongInServer(m.guild.id, songs[ni], true);
-                core.joinVoiceChannel(m.client, m.guild.id, false);
+                core.joinVoiceChannel(m.client, m.guild, false);
             }
             return;
         } else {
@@ -58,7 +58,7 @@ module.exports = {
                 description: "USAGE: **" + core.getServerPrefix(m.guild.id) + "remove [number]**. Use **" + core.getServerPrefix(m.guild.id) + "list** to see all songs."
             });
             return;
-            m.channel.send("( You can also use **" + core.getServerPrefix(m.guild.id) + "remove [number]** )");
+            m.channel.send({content: "( You can also use **" + core.getServerPrefix(m.guild.id) + "remove [number]** )"});
             core.sendSongListAwaitReaction(m.author, m.channel, m.guild, discord, reaction => {
                 for (let i = 0; i < core.numbers.length; i++) {
                     if (core.numbers[i] == reaction.emoji.name) {
@@ -84,11 +84,11 @@ module.exports = {
     
                         core.totalSongs--;
 
-                        core.logs.log("Removed song (ID) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
+                        core.logs.log("Removed song (Id) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
 
                         if (ni >= 0 && core.getServerSongs(m.guild.id).length > 0) {
                             core.setCurrentlyPlayingSongInServer(m.guild.id, songs[ni], true);
-                            core.joinVoiceChannel(m.client, m.guild.id, false);
+                            core.joinVoiceChannel(m.client, m.guild, false);
                         }
                         return;
                     }

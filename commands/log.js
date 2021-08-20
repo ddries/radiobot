@@ -9,6 +9,7 @@ module.exports = {
     execute: (m, args, discord, client) => {
         try {
             if (m.author.id == core.config.admin_id) {
+                return;
                 let sent = false;
                 for (let lf in core.logs.LogFile) {
                     if (core.logs.LogFile[lf].includes(args[0])) {

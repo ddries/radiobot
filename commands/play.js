@@ -42,8 +42,8 @@ function addSongProcess(m, songUrl) {
                             let nueva = core.getCurrentlyPlayingSongInServer(m.guild.id).length <= 0;
                             core.setCurrentlyPlayingSongInServer(m.guild.id, song, true);
     
-                            core.logs.log("Changed song playing from " + m.guild.id + " to (ID) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
-                            core.joinVoiceChannel(m.client, m.guild.id, nueva, true);
+                            core.logs.log("Changed song playing from " + m.guild.id + " to (Id) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
+                            core.joinVoiceChannel(m.client, m.guild, nueva, true);
                         });
                     } else {
                         core.discord.notify(core.discord.NotifyType.Error, m.channel, {
@@ -77,8 +77,8 @@ function addSongProcess(m, songUrl) {
                 let nueva = core.getCurrentlyPlayingSongInServer(m.guild.id).length <= 0;
                 core.setCurrentlyPlayingSongInServer(m.guild.id, song, true);
     
-                core.logs.log("Changed song playing from " + m.guild.id + " to (ID) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
-                core.joinVoiceChannel(m.client, m.guild.id, nueva, true);
+                core.logs.log("Changed song playing from " + m.guild.id + " to (Id) " + song[0], "COMMON", core.logs.LogFile.COMMON_LOG);
+                core.joinVoiceChannel(m.client, m.guild, nueva, true);
             });
         }
     });

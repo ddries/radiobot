@@ -1,19 +1,23 @@
 
+const { MessageActionRow, MessageButton } = require('discord.js');
 var core = require('./../core/core.js');
-const { alias } = require('./add.js');
 
 function generarDescripcion(m, client, comandos) {
     let desc = "";
-    let array = client.commands.array();
+    client = m.client;
+    let array = [...client.commands];
     for (let i = 0; i < array.length; i++) {
-        if (!comandos.includes(array[i].name)) continue;
+        if (!comandos.includes(array[i][0])) continue;
+
+        const cmd = array[i][1];
+
         //if ((typeof array[i].show !== "undefined" && !array[i].show) && m.author.id != core.config.admin_id) continue;
         let aliasString = "";
-        if (array[i].alias) {
+        if (cmd.alias) {
             aliasString = "( ";
-            for (let j = 0; j < array[i].alias.length; j++) {
-                aliasString += core.getServerPrefix(m.guild.id) + array[i].alias[j];
-                if (j+1 < array[i].alias.length) {
+            for (let j = 0; j < cmd.alias.length; j++) {
+                aliasString += core.getServerPrefix(m.guild.id) + cmd.alias[j];
+                if (j+1 < cmd.alias.length) {
                     aliasString += ", ";
                 } else {
                     aliasString += " )";
@@ -21,105 +25,130 @@ function generarDescripcion(m, client, comandos) {
             }
         }
 
-        desc += "**" + core.getServerPrefix(m.guild.id) + array[i].name + "**: ";
+        desc += "**" + core.getServerPrefix(m.guild.id) +cmd.name + "**: ";
         if (aliasString.length > 0)
             desc += aliasString + " ";
             
-        desc += array[i].description + "\n\n";
+        desc += cmd.description + "\n\n";
     }
 
     return desc;
 }
 
+const songsCmds = ["play", "song", "search", "pause", "resume", "next", "np", "info"];
+const listsCmds = ["play", "add", "remove", "list", "channel", "dc", "queue", "clear", "shuffle"];
+const utilsCmds = ["help", "invite", "report", "cancel", "faq", "ping", "prefix", "vote"];
+
 module.exports = {
     name: "help",
     alias: ["h"],
     description: "Shows all commands and their usage.",
-    execute: (m, args, discord, client) => {
-        if (args.length <= 0) {
-            let e = new discord.MessageEmbed()
-                .setURL("https://theradiobot.com")
-                .setColor("#fc9c1e")
-                .setFooter("RadioBot")
-                .setTimestamp()
-                .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                .setDescription("RadioBot is an easy and completely free to use Discord bot. Add it to your server, pick up some songs and enjoy the best 24/7 music station!\n\nYou can add songs with `" + core.getServerPrefix(m.guild.id) + "add` and play them with `" + core.getServerPrefix(m.guild.id) + "song`. Or simply use `" + core.getServerPrefix(m.guild.id) + "play` to quickly play the song you want!. However, you have tons of more commands to play with.")
-                .addFields(
-                    {
-                        "name": "Server Songs",
-                        "value": "You will need to control the songs played. You can check all commands related to this with `" + core.getServerPrefix(m.guild.id) + "help songs`."
-                    },
-                    {
-                        "name": "Server list",
-                        "value": "You will need to control your song list. You can check all commands related to this with `" + core.getServerPrefix(m.guild.id) + "help lists`."
-                    },
-                    {
-                        "name": "Utility",
-                        "value": "There are also some commands very useful. You can check them with `" + core.getServerPrefix(m.guild.id) + "help util`."
-                    },
-                    {
-                        "name": "Voting and Benefits",
-                        "value": "Do you want more from RadioBot? Do you want to surpass the limits? Check voting and benefits with with `" + core.getServerPrefix(m.guild.id) + "vote`."
-                    },
-                    {
-                        "name": "Need fast help?",
-                        "value": "Check the FAQ with `" + core.getServerPrefix(m.guild.id) + "faq`.",
-                        "inline": true
-                    },
-                    {
-                        "name": "Not enough?",
-                        "value": "Ask anything with `" + core.getServerPrefix(m.guild.id) + "report`.",
-                        "inline": true
-                    },
-                    {
-                        "name": "Want to invite RadioBot?",
-                        "value": "Get the invite link with `" + core.getServerPrefix(m.guild.id) + "invite`.",
-                        "inline": true
-                    }
-                );
-
-            m.channel.send({ embeds: [e]});
-        } else if (args.length == 1) {
-            let cat = args[0];
-            if (cat === "songs") {
+    execute: async (m, args, discord, client) => {
+        try {
+            if (args.length <= 0) {
+                const rowOptions = new MessageActionRow()
+                    .addComponents(
+                        [
+                            new MessageButton()
+                                .setStyle('SECONDARY')
+                                .setLabel('Songs')
+                                .setCustomId('help-songs'),
+                            new MessageButton()
+                                .setStyle('SECONDARY')
+                                .setLabel('Lists')
+                                .setCustomId('help-lists'),
+                            new MessageButton()
+                                .setStyle('SECONDARY')
+                                .setLabel('Utility')
+                                .setCustomId('help-util'),
+                            new MessageButton()
+                                .setStyle('LINK')
+                                .setLabel('Invite')
+                                .setURL('https://theradiobot.com/join'),
+                            new MessageButton()
+                                .setStyle('LINK')
+                                .setLabel('Vote')
+                                .setURL('https://top.gg/bot/778044858760953866/vote')
+                        ]
+                    );
+    
                 let e = new discord.MessageEmbed()
                     .setURL("https://theradiobot.com")
                     .setColor("#fc9c1e")
                     .setFooter("RadioBot")
                     .setTimestamp()
                     .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                    .setDescription(generarDescripcion(m, client, ["play", "song", "search", "pause", "resume", "next", "np", "info"]));
-
-                m.channel.send({ embeds: [e] });
-            } else if (cat === "lists") {
-                let e = new discord.MessageEmbed()
-                    .setURL("https://theradiobot.com")
-                    .setColor("#fc9c1e")
-                    .setFooter("RadioBot")
-                    .setTimestamp()
-                    .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                    .setDescription(generarDescripcion(m, client, ["play", "add", "remove", "list", "channel", "dc", "queue", "clear", "shuffle"]));
-
-                m.channel.send({ embeds: [e]});
-            } else if (cat === "util") {
-                let e = new discord.MessageEmbed()
-                    .setURL("https://theradiobot.com")
-                    .setColor("#fc9c1e")
-                    .setFooter("RadioBot")
-                    .setTimestamp()
-                    .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
-                    .setDescription(generarDescripcion(m, client, ["help", "invite", "report", "cancel", "faq", "ping", "prefix", "vote"]));
-
-                m.channel.send({ embeds: [e]});
-            } else {
-                core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                    description: "We could not find that category! (" + core.getServerPrefix(m.guild.id) + "help)"
+                    .setDescription("RadioBot is an easy and completely free to use Discord bot. Add it to your server, pick up some songs and enjoy the best 24/7 music station!\n\nYou can add songs with `" + core.getServerPrefix(m.guild.id) + "add` and play them with `" + core.getServerPrefix(m.guild.id) + "song`. Or simply use `" + core.getServerPrefix(m.guild.id) + "play` to quickly play the song you want!. However, you have tons of more commands to play with.")
+                    .addFields(
+                        {
+                            "name": "Server Songs",
+                            "value": "You will need to control the songs played."
+                        },
+                        {
+                            "name": "Server list",
+                            "value": "You will need to control your song list."
+                        },
+                        {
+                            "name": "Utility",
+                            "value": "There are also some commands very useful."
+                        },
+                        {
+                            "name": "Voting and Benefits",
+                            "value": "Do you want more from RadioBot? Do you want to surpass the limits? Check voting and benefits with with `" + core.getServerPrefix(m.guild.id) + "vote`."
+                        },
+                        {
+                            "name": "Need fast help?",
+                            "value": "Check the FAQ with `" + core.getServerPrefix(m.guild.id) + "faq`.",
+                            "inline": true
+                        },
+                        {
+                            "name": "Not enough?",
+                            "value": "Ask anything with `" + core.getServerPrefix(m.guild.id) + "report`.",
+                            "inline": true
+                        }
+                    );
+    
+                const reply = await m.channel.send({ embeds: [e], components: [rowOptions]});
+    
+                const filter = (b) => b.user.id === m.author.id;
+                const col = reply.createMessageComponentCollector({
+                    filter,
+                    time: 120 * 1000
+                });
+    
+                col.on('collect', (int) => {
+                    int.deferUpdate().then(async () => {
+                        let array = [];
+                        switch (int.customId) {
+                            case 'help-songs':
+                                array = songsCmds;
+                                break;
+                            case 'help-lists':
+                                array = listsCmds;
+                                break;
+                            case 'help-util':
+                                array = utilsCmds;
+                                break;
+                        }
+        
+                        await int.editReply({
+                            embeds: [
+                                new discord.MessageEmbed()
+                                    .setURL("https://theradiobot.com")
+                                    .setColor("#fc9c1e")
+                                    .setFooter("RadioBot")
+                                    .setTimestamp()
+                                    .setAuthor("RadioBot", "https://theradiobot.com/img/icon.png", "https://theradiobot.com")
+                                    .setDescription(generarDescripcion(m, client, array))
+                            ]
+                        })
+                    }).catch(e => {
+                        core.logs.log("Could not send interaction help: " + e, 'ERROR', core.logs.LogFile.ERROR_LOG);
+                    });
                 });
             }
-        } else {
-            core.discord.notify(core.discord.NotifyType.Error, m.channel, {
-                description: "USAGE: " + core.getServerPrefix(m.guild.id) + "help [optional: CATEGORY]"
-            });
+        } catch (e) {
+            m.reply("there was an error with that command!");
         }
     }
 };

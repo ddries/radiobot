@@ -15,7 +15,7 @@ var web = require('./webserver.js');
 
 const dbl = new DBL(core.config.dbl_token, client);
 
-const DEBUG = true;
+const DEBUG = false;
 
 core.init(() => {
     core.logs.log("Initialized core modules", "LOAD", core.logs.LogFile.LOAD_LOG);
@@ -27,6 +27,7 @@ core.init(() => {
         // Load songs, currently playing songs and channels of all servers
         core.mysql.queryGetResult("SELECT * FROM song", res => {
             for (let song of res) {
+                if (DEBUG && song.serverid != 447520366290796544) continue;
                 core.addSongToServer([song.id, song.name, song.url], song.serverid);
                 core.addSongById(song.id, [song.id, song.name, song.url]);
                 core.setVideoId(song.id, song.video_id, false);
@@ -38,6 +39,7 @@ core.init(() => {
 
             core.mysql.queryGetResult("SELECT * FROM song_lives", resLives => {
                 for (let song of resLives) {
+                    if (DEBUG && song.serverid != 447520366290796544) continue;
                     core.addSongToServer([song.id, song.name, song.url, true], song.serverid); // live video -> true
                     core.addSongById(song.id, [song.id, song.name, song.url]);
                     core.setVideoId(song.id, song.video_id, false);
@@ -122,7 +124,7 @@ core.init(() => {
             setTimeout(() => {
                 core.logs.log("Loaded (" + core.getAllServers().length + ") server(s).", "LOAD", core.logs.LogFile.LOAD_LOG);
                 mysqlLoaded = true;
-            }, DEBUG ? 40*1000 : 20*1000);
+            }, DEBUG ? 5*1000 : 20*1000);
         });
     });
 
@@ -147,16 +149,34 @@ core.init(() => {
         if (!DEBUG) {
             setTimeout(() => {
                 core.logs.log("Cleaning removed servers", "COMMON", core.logs.LogFile.COMMON_LOG);
-    
-                for (let _s of core.getAllServers()) {
-                    try {
-                        client.guilds.fetch(_s).then().catch(err => {
-                            core.removeServer(_s);
-                        });
-                    } catch (e) {
-                        core.removeServer(_s);
-                    }
-                }
+                
+                // let a = 0;
+                // let b = core.getAllServers();
+                // let _i = setInterval(() => {
+                //     try {
+                //         let _s = b[a];
+                //         client.guilds.fetch(_s).then().catch(err => {
+                //             core.removeServer(_s);
+                //         });
+                //     } catch (e) {
+                //         core.removeServer(_s);
+                //     }
+                //     a++;
+                //     if (a > b.length) {
+                //         clearInterval(_i);
+                //         _i = null;
+                //     }
+                // }, 500);
+                ///////////////////////////////////////////////////
+                // for (let _s of core.getAllServers()) {
+                //     try {
+                //         client.guilds.fetch(_s).then().catch(err => {
+                //             core.removeServer(_s);
+                //         });
+                //     } catch (e) {
+                //         core.removeServer(_s);
+                //     }
+                // }
             }, 30*1000);
         }
 
@@ -182,56 +202,67 @@ core.init(() => {
             }, 1800 * 1000);
         }
 
-        // let i = 0;
-        // let servers = core.getAllServers();
-        // const _loop_servers_init = () => {
-        //     setTimeout(() => {
-        //         i++;
-        //         if (i < servers.length) {
-        //             core.joinVoiceChannel(client, servers[i]);
-        //             _loop_servers_init();
-        //         }
-        //     }, 100);
-        // };
-        // _loop_servers_init();
-        for (let server of core.getAllServers()) {
-            if (core.getServerSongs(server).length > 0 && core.getCurrentlyPlayingSongInServer(server).length > 0) {
-                core.joinVoiceChannel(client, server);
-                setTimeout(() => {
-                    client.guilds.fetch(server).then(g => {
-                        g.members.fetch(client.user.id).then(u => {
-                            try {
-                                if (u.voice.channelID) {
-                                    u.voice.setDeaf(true).then().catch(err => {
-                                        core.logs.log("ERROR! Deaf RadioBot (" + server + ") at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                                    });
-                                } else {
-                                    let _i = setInterval(() => {
-                                        if (u.voice.channelID) {
-                                            u.voice.setDeaf(true).then().catch(err => {
-                                                core.logs.log("ERROR! Deaf RadioBot (" + server + ") at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                                            });
-                                            clearInterval(_i);
-                                            _i = null;
-                                        }
-                                    }, 100);
-                                }
-                            } catch (e) {
-                                core.logs.log("ERROR! At Bot initialization (" + server + "): " + e, "ERROR", core.logs.LogFile.ERROR_LOG);
-                            }
-                        }).catch(err => {
-                            core.logs.log("ERROR! Fetching member (" + server + ") " + client.user.id + " at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                        });
-                    }).catch(err => {
-                        core.logs.log("ERROR! Fetching guild " + server + " at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                    });
-                }, 500);
-            }
-        }
+        let i = 0;
+        let servers = core.getAllServers();
+        const _loop_servers_init = () => {
+            setTimeout(async () => {
+                i++;
+                if (i < servers.length) {
+                    try {
+                        const _s = await client.guilds.fetch(servers[i]).catch((__e) => {});
+                        if (_s) {
+                            core.joinVoiceChannel(client, _s);
+                            _loop_servers_init();
+                        }
+                    } catch(_e) {}
+                }
+            }, 100);
+        };
+        _loop_servers_init();
+        // for (let server of core.getAllServers()) {
+        //     if (core.getServerSongs(server).length > 0 && core.getCurrentlyPlayingSongInServer(server).length > 0) {
+        //         setTimeout(() => {
+        //             client.guilds.fetch(server).then(g => {
+        //                 core.joinVoiceChannel(client, g);
+        //                 // g.members.fetch(client.user.id).then(u => {
+        //                 //     try {
+        //                 //         if (u.voice.channelId) {
+        //                 //             u.voice.setDeaf(true).then().catch(err => {
+        //                 //                 core.logs.log("ERROR! Deaf RadioBot (" + server + ") at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+        //                 //             });
+        //                 //         } else {
+        //                 //             let n = 0;
+        //                 //             let _i = setInterval(() => {
+        //                 //                 if (++n > 15) {
+        //                 //                     clearInterval(_i);
+        //                 //                     _i = null;
+        //                 //                 } else {
+        //                 //                     if (u.voice.channelId) {
+        //                 //                         u.voice.setDeaf(true).then().catch(err => {
+        //                 //                             core.logs.log("ERROR! Deaf RadioBot (" + server + ") at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+        //                 //                         });
+        //                 //                         clearInterval(_i);
+        //                 //                         _i = null;
+        //                 //                     }
+        //                 //                 }
+        //                 //             }, 100);
+        //                 //         }
+        //                 //     } catch (e) {
+        //                 //         core.logs.log("ERROR! At Bot initialization (" + server + "): " + e, "ERROR", core.logs.LogFile.ERROR_LOG);
+        //                 //     }
+        //                 // }).catch(err => {
+        //                 //     core.logs.log("ERROR! Fetching member (" + server + ") " + client.user.id + " at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+        //                 // });
+        //             }).catch(err => {
+        //                 core.logs.log("ERROR! Fetching guild " + server + " at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+        //             });
+        //         }, 500);
+        //     }
+        // }
     });
 
     client.on("guildCreate", guild => {
-        // let ownerId = guild.ownerID;
+        // let ownerId = guild.ownerId;
 
         // client.users.fetch(ownerId).then(owner => {
         //     let e = new Discord.MessageEmbed()
@@ -257,87 +288,97 @@ core.init(() => {
     });
 
     client.on("voiceStateUpdate", async (oldState, newState) => {
+        // return;
         if (newState.member.id == client.user.id) {
             if (core.isServerDisconnected(newState.member.guild.id)) return;
             
             try {
                 let voiceChannel = core.getServerChannel(newState.member.guild.id);
-                if (newState.member.voice.channelID != voiceChannel) {
-                    if (!newState.channelID) {
-                        core.joinVoiceChannel(client, newState.member.guild.id);
+                if (newState.member.voice.channelId != voiceChannel) {
+                    if (!newState.channelId) {
+                        core.joinVoiceChannel(client, oldState.member.guild); // newState
                         return;
-                    } else {
-                        if ((newState.connection && oldState.connection) && newState.member.voice.channelID && (newState.member.voice.channelID != core.getServerChannel(newState.member.guild.id))) {
-                            if (voiceChannel.length > 0) {
-                                if (voiceChannel == oldState.channelID) {
-                                    if (newState.connection.status != 0) {
-                                        let _i = setInterval(() => {
-                                            if (newState.connection && newState.connection.status == 0) {
-                                                if (newState.connection.status == 0) {
-                                                    setTimeout(() => {
-                                                        newState.setChannel(oldState.channelID);
-                                                    }, 200);   
-                                                }
-                                                clearInterval(_i);
-                                                _i = null;
-                                            }
-                                        }, 10);
-                                    } else {
-                                        if (newState.connection.status == 0) {
-                                            setTimeout(() => {
-                                                newState.setChannel(oldState.channelID);
-                                            }, 200);
-                                        }
-                                    }
-                                    return;
-                                }
-                            }
-                        }
                     }
+                    // } else {
+                    //     if ((newState.connection && oldState.connection) && newState.member.voice.channelId && (newState.member.voice.channelId != core.getServerChannel(newState.member.guild.id))) {
+                    //         if (voiceChannel.length > 0) {
+                    //             if (voiceChannel == oldState.channelId) {
+                    //                 if (newState.connection.status != 0) {
+                    //                     let a = 0;
+                    //                     let _i = setInterval(() => {
+                    //                         a++;
+                    //                         if (newState.connection && newState.connection.status == 0) {
+                    //                             if (newState.connection.status == 0) {
+                    //                                 setTimeout(() => {
+                    //                                     newState.setChannel(oldState.channelId);
+                    //                                 }, 200);   
+                    //                             }
+                    //                             clearInterval(_i);
+                    //                             _i = null;
+                    //                             return;
+                    //                         }
+                    //                         if (a > 15) {
+                    //                             clearInterval(_i);
+                    //                             _i = null;
+                    //                         }
+                    //                     }, 10);
+                    //                 } else {
+                    //                     if (newState.connection.status == 0) {
+                    //                         setTimeout(() => {
+                    //                             newState.setChannel(oldState.channelId);
+                    //                         }, 200);
+                    //                     }
+                    //                 }
+                    //                 return;
+                    //             }
+                    //         }
+                    //     }
+                    // }
                 }
         
-                if (newState.member.voice && newState.member.voice.channelID == voiceChannel) {
-                    if (!newState.serverDeaf && (oldState.serverDeaf || !oldState.member.voice)) {
-                        newState.setDeaf(true);
-                        let e = new Discord.MessageEmbed()
-                            .setColor(core.discord.NotifyType.Info)
-                            .setFooter("RadioBot")
-                            .setTimestamp()
-                            .setDescription("Hey! Looks like I was undeafened in **" + newState.member.guild.name + "**. Take into consideration the fact that I'm deafened to reduce bandwidth usage and increase your privacy.");
+                // if (newState.member.voice && newState.member.voice.channelId == voiceChannel) {
+                //     if (!newState.serverDeaf && (oldState.serverDeaf || !oldState.member.voice)) {
+                //         newState.setDeaf(true);
+                //         let e = new Discord.MessageEmbed()
+                //             .setColor(core.discord.NotifyType.Info)
+                //             .setFooter("RadioBot")
+                //             .setTimestamp()
+                //             .setDescription("Hey! Looks like I was undeafened in **" + newState.member.guild.name + "**. Take into consideration the fact that I'm deafened to reduce bandwidth usage and increase your privacy.");
             
-                        let channel_id = core.getServerLastUsedChannel(newState.member.guild.id);
-                        if (channel_id.length > 0) {
-                            client.channels.fetch(channel_id).then(c => {
-                                c.send({ embeds: [e] });
-                            }).catch(err => {
-                                core.logs.log("ERROR! Sending message to server " + newState.member.guild.id + " to channel " + channel_id + " at voiceStatusUpdate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                            });
-                        } else {
-                            core.logs.log("Could not send bot deafen warning due to server last used channel being null on " + newState.member.guild.id, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                        }
-                    }
-                }
+                //         let channel_id = core.getServerLastUsedChannel(newState.member.guild.id);
+                //         if (channel_id.length > 0) {
+                //             client.channels.fetch(channel_id).then(c => {
+                //                 c.send({ embeds: [e] });
+                //             }).catch(err => {
+                //                 core.logs.log("ERROR! Sending message to server " + newState.member.guild.id + " to channel " + channel_id + " at voiceStatusUpdate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
+                //             });
+                //         } else {
+                //             core.logs.log("Could not send bot deafen warning due to server last used channel being null on " + newState.member.guild.id, "DISCORD", core.logs.LogFile.ERROR_LOG);
+                //         }
+                //     }
+                // }
             } catch (e) {
                 core.logs.log("ERROR! At voiceStatusUpdate... " + e, "DISCORD", core.logs.LogFile.ERROR_LOG);
             }
         } else {
-            if (newState.channelID != oldState.channelID) {
+            if (newState.channelId != oldState.channelId) {
                 if (newState.member.voice) {
-                    if (newState.channelID == core.getServerChannel(newState.guild.id)) {
-                        if (newState.channel.members.array().length == 2 && !core.isServerDisconnected(newState.guild.id)) {
+                    if (newState.channelId == core.getServerChannel(newState.guild.id)) {
+                        if (core.getCollectionSize(newState.channel.members) == 2 && !core.isServerDisconnected(newState.guild.id)
+                                && !core.isCurrentlyPlayingSongPaused(newState.guild.id)) {
                             core.startLoopPlay(newState.channel, false, false);
                         }
                     }
                 }
     
-                if (oldState.member.voice && oldState.channel && oldState.channel.members.array().length == 1 && oldState.channel.members.array()[0].id == client.user.id) {
+                if (oldState.member.voice && oldState.channel && core.getCollectionSize(oldState.channel.members) == 1 && oldState.channel.members.first().id == client.user.id) {
                     core.stopPlayingCurrentSong(oldState.guild.id);
                 }
             }
         }
     });
 
-    client.on("error", console.log);
+    // client.on("error", console.log);
 
     client.on("error", error => {
         core.logs.log("ERROR! On Error event: " + error, "DISCORD/EVENT", core.logs.LogFile.ERROR_LOG);

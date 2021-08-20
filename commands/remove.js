@@ -46,11 +46,11 @@ module.exports = {
                 description: "The song **" + name + "** has been removed from **" + m.guild.name + "**"
             });
 
-            core.logs.log("Removed song (ID) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
+            core.logs.log("Removed song (Id) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
 
             if (ni >= 0 && core.getServerSongs(m.guild.id).length > 0) {
                 core.setCurrentlyPlayingSongInServer(m.guild.id, songs[ni], true);
-                core.joinVoiceChannel(m.client, m.guild.id, false);
+                core.joinVoiceChannel(m.client, m.guild, false);
             }
             return;
         } else {
@@ -84,11 +84,11 @@ module.exports = {
     
                         core.totalSongs--;
 
-                        core.logs.log("Removed song (ID) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
+                        core.logs.log("Removed song (Id) " + id + " from " + m.guild.id, "COMMON", core.logs.LogFile.COMMON_LOG);
 
                         if (ni >= 0 && core.getServerSongs(m.guild.id).length > 0) {
                             core.setCurrentlyPlayingSongInServer(m.guild.id, songs[ni], true);
-                            core.joinVoiceChannel(m.client, m.guild.id, false);
+                            core.joinVoiceChannel(m.client, m.guild, false);
                         }
                         return;
                     }

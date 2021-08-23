@@ -15,9 +15,9 @@ var web = require('./webserver.js');
 
 const dbl = new DBL(core.config.dbl_token, client);
 
-const DEBUG = false;
+const DEBUG = true;
 
-core.init(() => {
+core.init(client, () => {
     core.logs.log("Initialized core modules", "LOAD", core.logs.LogFile.LOAD_LOG);
 
     let mysqlLoaded = false;
@@ -111,7 +111,7 @@ core.init(() => {
                     if (res.length > 0) {
                         if (res[0].state) {
                             core.setShuffle(server, true, false);
-                            core.logs.log("--------------> Enabled song shuffle to " + server, "COMMON", core.logs.LogFile.COMMON_LOG);
+                            core.logs.log("Enabled song shuffle to " + server, "COMMON", core.logs.LogFile.COMMON_LOG);
                         } else {
                             core.setShuffle(server, false, false);
                         }
@@ -219,76 +219,14 @@ core.init(() => {
             }, 100);
         };
         _loop_servers_init();
-        // for (let server of core.getAllServers()) {
-        //     if (core.getServerSongs(server).length > 0 && core.getCurrentlyPlayingSongInServer(server).length > 0) {
-        //         setTimeout(() => {
-        //             client.guilds.fetch(server).then(g => {
-        //                 core.joinVoiceChannel(client, g);
-        //                 // g.members.fetch(client.user.id).then(u => {
-        //                 //     try {
-        //                 //         if (u.voice.channelId) {
-        //                 //             u.voice.setDeaf(true).then().catch(err => {
-        //                 //                 core.logs.log("ERROR! Deaf RadioBot (" + server + ") at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-        //                 //             });
-        //                 //         } else {
-        //                 //             let n = 0;
-        //                 //             let _i = setInterval(() => {
-        //                 //                 if (++n > 15) {
-        //                 //                     clearInterval(_i);
-        //                 //                     _i = null;
-        //                 //                 } else {
-        //                 //                     if (u.voice.channelId) {
-        //                 //                         u.voice.setDeaf(true).then().catch(err => {
-        //                 //                             core.logs.log("ERROR! Deaf RadioBot (" + server + ") at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-        //                 //                         });
-        //                 //                         clearInterval(_i);
-        //                 //                         _i = null;
-        //                 //                     }
-        //                 //                 }
-        //                 //             }, 100);
-        //                 //         }
-        //                 //     } catch (e) {
-        //                 //         core.logs.log("ERROR! At Bot initialization (" + server + "): " + e, "ERROR", core.logs.LogFile.ERROR_LOG);
-        //                 //     }
-        //                 // }).catch(err => {
-        //                 //     core.logs.log("ERROR! Fetching member (" + server + ") " + client.user.id + " at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-        //                 // });
-        //             }).catch(err => {
-        //                 core.logs.log("ERROR! Fetching guild " + server + " at ready event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-        //             });
-        //         }, 500);
-        //     }
-        // }
     });
 
     client.on("guildCreate", guild => {
-        // let ownerId = guild.ownerId;
-
-        // client.users.fetch(ownerId).then(owner => {
-        //     let e = new Discord.MessageEmbed()
-        //         .setColor(core.discord.NotifyType.Info)
-        //         .setFooter("RadioBot");
-
-        //     e.setTimestamp();
-        //     e.setDescription("Thanks for adding me to your server!\n\n" + 
-        //                     "Before you can actually play songs non-stop, you'll need to configure me first.\n\n" + 
-        //                     "First of all, choose a voice channel for me. You can do this with `" + core.getServerPrefix(m.guild.id) + "channel [name / part of name]`.\n\n" +
-        //                     "You will also need to add songs to the server. You can do this with `" + core.getServerPrefix(m.guild.id) + "add`.\n\n"+
-        //                     "If you need more help, you can type `" + core.getServerPrefix(m.guild.id) + "help`.\n\n" +
-        //                     "I really hope you enjoy me!\n\n");
-        //     owner.send(e).then().catch(err => {
-        //         core.logs.log("ERROR! Sending DM to user " + ownerId + " at guildCreate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-        //     });
-        // }).catch(err => {
-        //     core.logs.log("ERROR! Fetching member " + ownerId + " at guildCreate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-        // });
-
         core.logs.log("Joined " + guild.name + " (" + guild.id + ")", "JOIN", core.logs.log.COMMON_LOG);
         core.discord.sendWebhook("Joined " + guild.name + " (" + guild.id + ")");
     });
 
     client.on("voiceStateUpdate", async (oldState, newState) => {
-        // return;
         if (newState.member.id == client.user.id) {
             if (core.isServerDisconnected(newState.member.guild.id)) return;
             
@@ -335,28 +273,6 @@ core.init(() => {
                     //     }
                     // }
                 }
-        
-                // if (newState.member.voice && newState.member.voice.channelId == voiceChannel) {
-                //     if (!newState.serverDeaf && (oldState.serverDeaf || !oldState.member.voice)) {
-                //         newState.setDeaf(true);
-                //         let e = new Discord.MessageEmbed()
-                //             .setColor(core.discord.NotifyType.Info)
-                //             .setFooter("RadioBot")
-                //             .setTimestamp()
-                //             .setDescription("Hey! Looks like I was undeafened in **" + newState.member.guild.name + "**. Take into consideration the fact that I'm deafened to reduce bandwidth usage and increase your privacy.");
-            
-                //         let channel_id = core.getServerLastUsedChannel(newState.member.guild.id);
-                //         if (channel_id.length > 0) {
-                //             client.channels.fetch(channel_id).then(c => {
-                //                 c.send({ embeds: [e] });
-                //             }).catch(err => {
-                //                 core.logs.log("ERROR! Sending message to server " + newState.member.guild.id + " to channel " + channel_id + " at voiceStatusUpdate event " + err, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                //             });
-                //         } else {
-                //             core.logs.log("Could not send bot deafen warning due to server last used channel being null on " + newState.member.guild.id, "DISCORD", core.logs.LogFile.ERROR_LOG);
-                //         }
-                //     }
-                // }
             } catch (e) {
                 core.logs.log("ERROR! At voiceStatusUpdate... " + e, "DISCORD", core.logs.LogFile.ERROR_LOG);
             }
@@ -377,8 +293,6 @@ core.init(() => {
             }
         }
     });
-
-    // client.on("error", console.log);
 
     client.on("error", error => {
         core.logs.log("ERROR! On Error event: " + error, "DISCORD/EVENT", core.logs.LogFile.ERROR_LOG);

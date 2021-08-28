@@ -5,7 +5,7 @@ const config = require('./core_config.json');
 
 const ytdl = require('ytdl-core');
 const ytsr = require('ytsr');
-var fs = require('fs');
+const fs = require('fs');
 const md5 = require('md5');
 const request = require('request');
 
@@ -59,7 +59,11 @@ var API_WRAPPER_URL = config.api_url;
 var CLIENT_Id = "";
 const SONGS_PER_EMBED = 12;
 
-async function init(callback) {
+var DiscordClient = null;
+
+async function init(discordClient, callback) {
+    DiscordClient = discordClient;
+    
     await logs.init();
     await discord.init();
     await mysql.init();

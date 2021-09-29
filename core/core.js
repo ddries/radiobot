@@ -319,7 +319,7 @@ async function startLoopPlay(channel, refresh, songCommand) {
     let songUrl = "";
     let song = [];
 
-    logs.log('Called startLoopPlay in server ' + channel.guild.name + " (" + channel.guild.id + ")", 'COMMON', logs.LogFile.COMMON_LOG);
+    // logs.log('Called startLoopPlay in server ' + channel.guild.name + " (" + channel.guild.id + ")", 'COMMON', logs.LogFile.COMMON_LOG);
 
     if (getQueue(channel.guild.id) != -1 && getQueue(channel.guild.id) && !songCommand) {
         if (getServerSongs(channel.guild.id).length > 0) {
@@ -398,7 +398,7 @@ async function startLoopPlay(channel, refresh, songCommand) {
 
             const player = Voice.createAudioPlayer();
 
-            logs.log('Playing song in server ' + channel.guild.name + " (" + channel.guild.id + ")", "COMMON", logs.LogFile.COMMON_LOG);
+            // logs.log('Playing song in server ' + channel.guild.name + " (" + channel.guild.id + ")", "COMMON", logs.LogFile.COMMON_LOG);
             // discord.sendLogWebhook('Playing song in server ' + channel.guild.name + " (" + channel.guild.id + ")");
 
             if (!song[3]) { // not live video

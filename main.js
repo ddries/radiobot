@@ -15,7 +15,7 @@ var web = require('./webserver.js');
 
 const dbl = new DBL(core.config.dbl_token, client);
 
-const DEBUG = true;
+const DEBUG = false;
 
 core.init(client, () => {
     core.logs.log("Initialized core modules", "LOAD", core.logs.LogFile.LOAD_LOG);
@@ -227,6 +227,8 @@ core.init(client, () => {
     });
 
     client.on("voiceStateUpdate", async (oldState, newState) => {
+        if (!newState?.member || !client?.user) return;
+
         if (newState.member.id == client.user.id) {
             if (core.isServerDisconnected(newState.member.guild.id)) return;
             

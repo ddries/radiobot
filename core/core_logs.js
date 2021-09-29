@@ -25,7 +25,8 @@ exports.init = init;
 
 function log(message, prefix = "", logFile="") {
     let parsedLogMessage = prefix.length > 0 ? getCurrentTimetamp() + " [" + prefix + "] " + message : message;
-
+    console.log(parsedLogMessage);
+    return;
     if (logFile.length <= 0) {
         console.log(parsedLogMessage);
     }

@@ -36,6 +36,7 @@ export default class ServerManager {
 
     public createNew(guild: discord.Guild): void {
         const server = new Server(guild.id);
+        server.setGuild(guild);
         this._servers.set(server.getId(), server);
     }
 

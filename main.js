@@ -8,12 +8,12 @@ const client = new Discord.Client({
     ]
 });
 
-const DBL = require("dblapi.js");
+// const DBL = require("dblapi.js");
 
 var core = require('./core/core.js');
 var web = require('./webserver.js');
 
-const dbl = new DBL(core.config.dbl_token, client);
+// const dbl = new DBL(core.config.dbl_token, client);
 
 const DEBUG = false;
 
@@ -181,10 +181,12 @@ core.init(client, () => {
         }
 
         if (!DEBUG) {
-            dbl.postStats(core.getServerCount(client));
-            setInterval(() => {
-                dbl.postStats(core.getServerCount(client));
-            }, 1800 * 1000);
+            // if (dbl) {
+            //     dbl.postStats(core.getServerCount(client));
+            //     setInterval(() => {
+            //         dbl.postStats(core.getServerCount(client));
+            //     }, 1800 * 1000);
+            // }
 
             core.logs.log('Trying to get through API', "HEARTBEAT", core.logs.LogFile.DOWNLOAD_LOG);
             core.request(core.API_WRAPPER_URL, (err, resp, body) => {

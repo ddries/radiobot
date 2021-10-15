@@ -60,7 +60,6 @@ export default class RadioBot {
         this._sign();
 
         await Db.getInstance().init();
-        // await CadenceMemory.getInstance().init();
 
         await SongManager.getInstance().init();
         await VoteManager.getInstance().init();
@@ -82,36 +81,6 @@ export default class RadioBot {
         const _apiStatus = await WebApi.performHeartbeat();
         this.logger.log('api status: ' + (_apiStatus ? 'working' : 'failing'));
 
-        // const allSongs = SongManager.getInstance().getAllSongs();
-        // const songRes = await Db.getMySqlContext().queryGetResult('SELECT id, video_id FROM song WHERE length = -1');
-        // let i = 0
-        // const _update_one_song = async () => {
-        //     const song = songRes[i];
-        //     const videoId = song['video_id'];
-        //     const id = parseInt(song['id']);
-
-        //     // if (song.getLengthSeconds() != -1) return;
-
-        //     const result = await WebApi.getVideoInfo(videoId, ['lengthSeconds']);
-        //     if (!result) {
-        //         console.log('[ERROR] NO RESULT IN SONG ID ' + id);
-        //         return;
-        //     }
-
-        //     Db.getMySqlContext().query('UPDATE song SET length = ? WHERE id = ?', [result.get('lengthSeconds'), id]);
-        //     console.log('UPDATED SONG (' + id + ') LENGTH IS ' + result.get('lengthSeconds'));
-        // };
-        // let _i = setInterval(() => {
-        //     _update_one_song();
-        //     i++;
-        //     if (i == songRes.length - 1) {
-        //         clearInterval(_i);
-        //         _i = null;
-        //     }
-        // }, 500);
-
-        // return;
-
         this.logger.log('starting discord module radiobot ' + RadioBot.Version + ", debug " + RadioBot.Debug.toString());
         await RadiobotDiscord.getInstance().init();
 
@@ -125,7 +94,7 @@ export default class RadioBot {
                 this.logger.log('testing api functionality');
                 let a = await WebApi.performHeartbeat();
                 this.logger.log('api status: ' + (a ? 'working' : 'failing'));
-            }, 300_000); // 5 minutes
+            }, 300_000);
         }
     }
 

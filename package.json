@@ -1,14 +1,12 @@
 {
-  "name": "cadence",
+  "name": "RadioBot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "RadioBot is an easy and completely free to use Discord bot",
+  "main": "RadioBot.js",
+  "scripts": {},
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@discordjs/opus": "^0.5.3",
     "@discordjs/voice": "^0.6.0",

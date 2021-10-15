@@ -108,7 +108,7 @@ export default class RadiobotDiscord {
             const _server = ServerManager.getInstance().getServerById(_guildId);
             if (!_server) return;
 
-            if (_server.getState() == ServerState.Disconnected || _server.getState() == ServerState.Paused) return;
+            if (_server.getState() == ServerState.Disconnected) return;
 
             if (!newState.channelId || !newState.channel) {
                 _server.joinVoice(false, true);
@@ -123,22 +123,22 @@ export default class RadiobotDiscord {
                 }
             }
         } else {
+            const _server = ServerManager.getInstance().getServerById(newState.member.guild.id);
+            if (!_server) return;
+
+            if (_server.getState() == ServerState.Paused) return;
+
             if (oldState.channelId != newState.channelId) {
                 if (newState.member.voice) {
-                    const _server = ServerManager.getInstance().getServerById(newState.member.guild.id);
-                    if (!_server) return;
 
                     if (newState.channelId == _server.getChannelId()) {
                         if (newState.channel?.members.size == 2 && _server.getState() != ServerState.Disconnected && _server.getState() != ServerState.Paused) {
-                            _server.startPlay();
+                            _server.startPlay(false);
                         }
                     }
                 }
 
                 if (oldState.member.voice && oldState.channel && oldState.channel.members.size == 1 && oldState.channel.members.first()?.id == this.Client.user.id) {
-                    const _server = ServerManager.getInstance().getServerById(newState.member.guild.id);
-                    if (!_server) return;
-
                     _server.stop();
                 }
             }
@@ -195,27 +195,17 @@ export default class RadiobotDiscord {
 
     private async _joinAllGuilds(): Promise<void> {
         const _allServers = ServerManager.getInstance().getAllServers();
-        let i = 0;
-        const _join_one_guild: () => void = () => {
-            const _server = _allServers[i];
-            if (_server.getGuild()) {
-                if (_server.getState() == ServerState.Disconnected) return;
-                if (!_server.getVoiceConnection()) {
-                    _server.joinVoice();
+        for (let i = 0; i < _allServers.length; i++) {
+            if (!_allServers[i].getGuild()) continue;
+            if (_allServers[i].getState() == ServerState.Disconnected) continue;
+            if (_allServers[i].getVoiceConnection()) continue;
 
-                    if (_server.getState() == ServerState.Playing)
-                        _server.startPlay();
-                }
-            }
-        };
-        let _i = setInterval(() => {
-            _join_one_guild();
-            i++;
-            if (i >= _allServers.length) {
-                clearInterval(_i);
-                _i = null;
-            }
-        }, 250);
+            _allServers[i].joinVoice();
+            if (_allServers[i].getState() == ServerState.Playing)
+                _allServers[i].startPlay();
+
+            await (new Promise<void>(res => setTimeout(res, 250)));
+        }
     }
     
     private _resolveCommandPath(commandName: string): string {

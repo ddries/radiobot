@@ -322,12 +322,14 @@ export class Server {
 
             const channelObject: discord.GuildChannel = this.getGuild().channels.cache.get(this.getChannelId()) as GuildChannel;
             if (!channelObject) return false;
-            
-            const memmberCount: number = [...channelObject.members.keys()].length;
-            if (memmberCount <= 0 || (memmberCount == 1 && channelObject.members.first()?.id == RadiobotDiscord.getInstance().Client.user.id)) return false;
 
             if (nextSong.getId() != song.getId())
                 this.logger.log('switched to play ' + nextSong.getName() + ' from ' + song.getName() + ' in ' + RadiobotDiscord.getInstance().resolveGuildNameAndId(this.getGuild()));
+
+            this.setState(ServerState.Playing);
+
+            const memmberCount: number = [...channelObject.members.keys()].length;
+            if (memmberCount <= 0 || (memmberCount == 1 && channelObject.members.first()?.id == RadiobotDiscord.getInstance().Client.user.id)) return false;
 
             const player: Voice.AudioPlayer = Voice.createAudioPlayer();
             let playFromApiStream: boolean = false;
@@ -358,7 +360,6 @@ export class Server {
             this.logger.log(RadiobotDiscord.getInstance().resolveGuildNameAndId(this.getGuild()) + ' playing resource ' + file);
 
             player.play(audioResource);
-            this.setState(ServerState.Playing);
 
             const voiceSub = voiceConnection.subscribe(player);
 

@@ -1,33 +1,27 @@
 {
-  "name": "radiobot",
+  "name": "cadence",
   "version": "1.0.0",
-  "description": "[A bot to play non-stop your favourite music from a list up to 10 songs per server.](http://theradiobot.com \"A bot to play non-stop your favourite music from a list up to 10 songs per server.\")",
-  "main": "main.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/DriesCode/radiobot.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/DriesCode/radiobot/issues"
-  },
-  "homepage": "https://github.com/DriesCode/radiobot#readme",
   "dependencies": {
+    "@discordjs/opus": "^0.5.3",
     "@discordjs/voice": "^0.6.0",
-    "dblapi.js": "^2.4.1",
+    "@types/body-parser": "^1.19.1",
+    "@types/express": "^4.17.13",
+    "@types/node-fetch": "^2.5.12",
+    "body-parser": "^1.19.0",
     "discord.js": "^13.1.0",
     "express": "^4.17.1",
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9",
-    "md5": "^2.3.0",
-    "mysql": "^2.18.1",
-    "request": "^2.88.2",
-    "ytdl-core": "^4.9.1",
-    "ytsr": "^3.5.3"
+    "mysql2": "^2.3.0",
+    "node-fetch": "^2.6.5",
+    "typescript": "^4.3.5"
   }
 }

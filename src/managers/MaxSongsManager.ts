@@ -9,7 +9,7 @@ export default class MaxSongsManager {
 
     public getServerMaxSongsById(id: string): number {
         if (this._maxSongs.has(id)) return this._maxSongs.get(id);
-        else return null;
+        else return 10;
     }
 
     public setServerMaxSongs(serverId: string, maxSongs: number, updateBd: boolean = true): void {

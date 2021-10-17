@@ -2,6 +2,7 @@ import discord from 'discord.js';
 
 import fs from 'fs';
 import path from 'path';
+import fetch from 'node-fetch';
 
 (async () => {
     const config:  { [key: string]: any } = JSON.parse(fs.readFileSync(path.join(__dirname, 'radiobot.json'), 'utf-8'));
@@ -61,6 +62,7 @@ import path from 'path';
     shardManager.spawn().then(shards => {
         areAllReady = true;
 
+        // Each shard activity sync
         getTotalServers().then(totalServers => {
             shards.forEach(oneShard => {
                 // if (oneShard.id == 0) {
@@ -91,5 +93,35 @@ import path from 'path';
         }).catch(e => {
             log('error fetching all servers (3) ' + e);
         });
+
+        // Top.gg stats poster
+        const postStats = () => {
+            getTotalServers().then(totalServers => {
+                fetch('https://top.gg/api/bots/' + config['ClientId'] + '/stats', {
+                    method: 'post',
+                    body: JSON.stringify({
+                        'server_count': totalServers,
+                        'shard_count': shardManager.totalShards
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': config['BotlistToken']
+                    }
+                }).then(() => {
+                    log('successfully posted stats');
+                }).catch(err => {
+                    log('could not post stats (1): ' + err);
+                });
+            }).catch(e => {
+                log('error fetching all servers (4) ' + e);
+            });
+        };
+
+        try {
+            postStats();
+            setInterval(postStats, 180_000);
+        } catch(e) {
+            log('could not post stats (2): ' + e);
+        }
     });
 })();

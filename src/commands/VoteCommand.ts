@@ -32,7 +32,7 @@ const VoteCommand: ICommand = {
                     "value": "Add in any server you want a song longer than 10 minutes (but shorter than 20 minutes). When you try to add a song longer than 10 minutes, you will be able to use your pack. [`" + server.getPrefix() + "add`]"
                 },
                 {
-                    "name": "PACK: 1, COST: 5 votes",
+                    "name": "PACK: 1, COST: 2 votes",
                     "value": "Get another song slot for the server. When you try to add a song when there are no more available slots for the server, you will be able to use your pack. [`" + server.getPrefix() + "add`]"
                 },
                 {

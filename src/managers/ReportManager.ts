@@ -1,6 +1,7 @@
 import Logger from "../utils/Logger";
 import discord from 'discord.js';
 import EmbedHelper, { EmbedColor } from "../helpers/EmbedHelper";
+import RadiobotDiscord from "../discord/RadiobotDiscord";
 
 export default class ReportManager {
     private static _instance: ReportManager = null;

@@ -40,6 +40,11 @@ const VoteuseCommand: ICommand = {
             return;
         }
 
+        if (userVotes < votesNeeded) {
+            m.reply({ embeds: [ EmbedHelper.NOK("You don't have enough votes.") ]});
+            return;
+        }
+
         VoteManager.getInstance().setVotesByUserId(m.author.id, (userVotes - votesNeeded));
         VotePackManager.getInstance().addVotePack(m.author.id, pack);
 

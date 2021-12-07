@@ -1,0 +1,34 @@
+{
+    "Debug": false,
+    "IsMainBot": true,
+    "Version": "0.0.0",
+    "ClientId": "",
+    "ApiUrl": "",
+    "WebUrl": "",
+    "CachePath": "",
+    "StaffIds": [
+        ""
+    ],
+
+    "Maintainment": false,
+
+    "WebToken": "",
+    "WebPort": 0,
+    "BotlistToken": "",
+    
+    "BotName": "RadioBot",
+    "BotDefaultPrefix": "r!",
+    "BotToken": "",
+    
+    "StatusWebhook": "",
+    "StatsWebhook": "",
+    "AdminWebhook": "",
+
+    "MySqlHost": "",
+    "MySqlPort": 0,
+    "MySqlUsername": "",
+    "MySqlPassword": "",
+    "MySqlDatabase": "",
+
+    "SongsPerEmbed": 0
+}

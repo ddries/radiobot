@@ -335,27 +335,28 @@ export class Server {
             const player: Voice.AudioPlayer = Voice.createAudioPlayer();
             let playFromApiStream: boolean = false;
 
-            if (!(await SongManager.getInstance().doesCacheEntryExist(nextSong)) || WebApi.isVideoBeingDownloaded(nextSong.getVideoId())) {
+            if (!nextSong.isLiveVideo() && (!(await SongManager.getInstance().doesCacheEntryExist(nextSong)) || WebApi.isVideoBeingDownloaded(nextSong.getVideoId()))) {
                 playFromApiStream = true;
                 
                 if (WebApi.getStatus() && !WebApi.isVideoBeingDownloaded(nextSong.getVideoId())) {
                     WebApi.downloadVideo(nextSong.getVideoId()).catch(() => {
-                        this.logger.log('[ERROR] could not download video Id ' + nextSong.getVideoId() + ' because API is not working');
-                        RadiobotDiscord.getInstance().sendAdmin('(' + RadiobotDiscord.getInstance().resolveGuildNameAndId(this.getGuild()) + ') Could not download video Id ' + nextSong.getVideoId() + ' because API is not working')
+                        this.logger.log('[ERROR] could not download video Id ' + nextSong.getVideoId());
+                        RadiobotDiscord.getInstance().sendAdmin('(' + RadiobotDiscord.getInstance().resolveGuildNameAndId(this.getGuild()) + ') Could not download video Id ' + nextSong.getVideoId())
                         this.startPlay();
                     });
                 }
             }
 
-            if (playFromApiStream && !WebApi.getStatus()) {
-                this.logger.log('skipping streamed audio (' + nextSong.getName() + ') due to api not working');
+            if ((playFromApiStream || nextSong.isLiveVideo()) && !WebApi.getStatus()) {
+                this.logger.log('skipping streamed audio (' + nextSong.getName() + ')');
                 this.startPlay();
                 return false;
             }
 
-            const file: string = playFromApiStream ? WebApi.buildUrlForVideoId(nextSong.getVideoId()) : path.join(RadioBot.CachePath, FunctionUtils.getMd5(nextSong.getVideoId()) + ".weba");;
-            const audioResource = Voice.createAudioResource(file, {
-                inputType: Voice.StreamType.WebmOpus
+            const file: string = nextSong.isLiveVideo() ? WebApi.buildLiveUrlForVideoId(nextSong.getVideoId()): (playFromApiStream ? WebApi.buildUrlForVideoId(nextSong.getVideoId()) : path.join(RadioBot.CachePath, FunctionUtils.getMd5(nextSong.getVideoId()) + ".weba"));
+
+            const audioResource = Voice.createAudioResource(file, nextSong.isLiveVideo() ? { inputType: Voice.StreamType.Opus } : {
+                inputType: Voice.StreamType.WebmOpus,
             });
 
             this.logger.log(RadiobotDiscord.getInstance().resolveGuildNameAndId(this.getGuild()) + ' playing resource ' + file);
@@ -363,18 +364,18 @@ export class Server {
             player.play(audioResource);
 
             const voiceSub = voiceConnection.subscribe(player);
-
+            
             if (voiceSub) {
                 this.setVoiceSubscription(voiceSub);
 
                 Voice.entersState(player, Voice.AudioPlayerStatus.Playing, 5_000).then(() => {
+                    if (nextSong.isLiveVideo()) return;
+
                     setTimeout(() => {
                         const startedPlayingTime = Date.now();
                         player.on(Voice.AudioPlayerStatus.Idle, async () => {
                             const timePassed = Math.round((Date.now() - startedPlayingTime) / 1000);
-                            // console.log(timePassed);
-                            // console.log(nextSong.getLengthSeconds());
-    
+
                             player.stop();
 
                             if (!playFromApiStream && !FunctionUtils.isValueInsideErrorMargin(timePassed, nextSong.getLengthSeconds(), 0.05)) {

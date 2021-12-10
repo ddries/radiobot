@@ -66,7 +66,7 @@ const AddCommand: ICommand = {
         }
 
         if (lengthInSeconds >= 600 || lengthInSeconds == 0) {
-            if (VotePackManager.getInstance().hasVotePack(m.author.id, VotePackType.LongerSong) && lengthInSeconds <= 1200) {
+            if (VotePackManager.getInstance().hasVotePack(m.author.id, VotePackType.LongerSong) && lengthInSeconds <= 1200 && lengthInSeconds > 0) {
                 const r = await m.reply({ embeds: [ EmbedHelper.Premium("To add songs longer than 10 minutes you need to redeem a RadioPack type `" + VotePackType.LongerSong + "`." + 
                                         " React to the message to continue, wait to cancel.").setFooter("You have " + VotePackManager.getInstance().getVotePacksByUserId(m.author.id, VotePackType.LongerSong) + " RadioPack(s) of type " + VotePackType.LongerSong) ]});
 
@@ -83,7 +83,7 @@ const AddCommand: ICommand = {
                 VotePackManager.getInstance().removeVotePack(m.author.id, VotePackType.AnyLengthLiveVideo);
                 RadiobotDiscord.getInstance().sendStatus(m.author.username + " (" + m.author.id + ") just used a RadioPack `" + VotePackType.AnyLengthLiveVideo + "`");
             } else {
-                m.reply({ embeds: [ EmbedHelper.NOK("You cannot add songs longer than 10 minutes (psst, use " + server.getPrefix() + "vote") ]});
+                m.reply({ embeds: [ EmbedHelper.NOK("You cannot add songs longer than 10 minutes (psst, use " + server.getPrefix() + "vote)") ]});
                 return;
             }
         }

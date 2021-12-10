@@ -49,7 +49,7 @@ export default class EmbedHelper {
         const finalIndex = (offset + RadioBot.SongsPerEmbed > server.getSongs().length) ? server.getSongs().length : offset + RadioBot.SongsPerEmbed;
 
         for (let i = offset; i < finalIndex; i++) {
-            embed.addField('Song ' + (i + 1), server.getSongAt(i).getName());
+            embed.addField('Song ' + (i + 1), (server.getSongAt(i).isLiveVideo() ? '🔴 ' : '') + server.getSongAt(i).getName());
         }
 
         embed.setFooter('Page ' + pageNumber + '/' + Math.ceil(server.getSongs().length / RadioBot.SongsPerEmbed) + ' — ' + RadioBot.BotName);

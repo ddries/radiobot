@@ -42,4 +42,8 @@ export default class SongModel {
     public getLengthSeconds(): number {
         return this._lengthSeconds;
     }
+
+    public isLiveVideo(): boolean {
+        return this._lengthSeconds === 0;
+    }
 }

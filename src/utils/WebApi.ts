@@ -99,16 +99,20 @@ export default class WebApi {
         return this._url + 'audio?u=' + encodeURIComponent(videoId) + '&ver=v2';
     }
 
+    public static buildLiveUrlForVideoId(videoId: string): string {
+        return this._url + 'live?&u=' + encodeURIComponent(videoId);
+    }
+
     public static async performHeartbeat(): Promise<boolean> {
         if (this._url.length <= 0) return false;
-        const _result = await (await fetch(
+        const _result = await fetch(
             this._url,
             {
                 headers: {
                     "Authorization": "002"
                 }
             }
-        ));
+        );
 
         this.apiStatus = _result.status == 200;
         return this.apiStatus;

@@ -14,6 +14,8 @@ import RChannelManager from './managers/RChannelManager';
 import PlayingSongManager from './managers/PlayingSongManager';
 import WebApi from './utils/WebApi';
 import HttpServer from './http/HttpServer';
+import PremiumManager from './managers/PremiumManager';
+import PatreonApi from './utils/PatreonApi';
 
 export default class RadioBot {
 
@@ -73,6 +75,7 @@ export default class RadioBot {
         await ShuffleManager.getInstance().init();
         await RChannelManager.getInstance().init();
         await PlayingSongManager.getInstance().init();
+        await PremiumManager.getInstance().init();
 
         await ServerManager.getInstance().init();
 
@@ -80,6 +83,8 @@ export default class RadioBot {
         WebApi.setUrl(Config.getInstance().getKeyOrDefault('ApiUrl', ''));
         const _apiStatus = await WebApi.performHeartbeat();
         this.logger.log('api status: ' + (_apiStatus ? 'working' : 'failing'));
+
+        PatreonApi.setUrl(Config.getInstance().getKeyOrDefault('PatreonApiUrl', ''));
 
         this.logger.log('starting discord module radiobot ' + RadioBot.Version + ", debug " + RadioBot.Debug.toString());
         await RadiobotDiscord.getInstance().init();

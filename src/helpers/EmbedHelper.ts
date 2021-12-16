@@ -39,7 +39,7 @@ export default class EmbedHelper {
 
         if (server.getSongs().length <= RadioBot.SongsPerEmbed) {
             for (let i = 0; i < server.getSongs().length; i++) {
-                embed.addField('Song ' + (i + 1), server.getSongAt(i).getName());
+                embed.addField('Song ' + (i + 1), (server.getSongAt(i).isLiveVideo() ? '🔴 ' : '') + server.getSongAt(i).getName());
             }
 
             return embed;

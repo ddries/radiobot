@@ -1,7 +1,7 @@
 import Db from "../Db";
 import VotePackModel from "../models/VotePackModel";
 
-export default class VotePackDriver {
+export default class MaxSongsDriver {
 
     public static async getMaxSongsByServerId(id: string): Promise<number> {
         const dbResult: any[] = await Db.getMySqlContext().queryGetResult('SELECT max_songs FROM server_maxsongs WHERE serverid = ?', [id]);

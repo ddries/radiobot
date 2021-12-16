@@ -278,6 +278,18 @@ export class Server {
         return Voice.getVoiceConnection(this.getId());
     }
 
+    public getNumberOfLiveVideos(): number {
+        let result: number = 0;
+
+        for (let song of this._songs) {
+            if (song.isLiveVideo()) {
+                result++;
+            }
+        }
+
+        return result;
+    }
+
     public joinVoice(disconnectFirst: boolean = false, overrideJoinConfigCheck: boolean = false): void {
         if (!this.getGuild()) return;
 

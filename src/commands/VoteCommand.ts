@@ -13,7 +13,7 @@ const VoteCommand: ICommand = {
         if (!server) return;
 
         let userPacks = 0;
-        if (VotePackManager.getInstance().getAllVotePacksByUserId(m.author.id))
+        if (VotePackManager.getInstance().getAllVotePacksByUserId(m.author.id).size >= 0)
             userPacks = VotePackManager.getInstance().getAllVotePacksByUserId(m.author.id).size;
 
         let e = new discord.MessageEmbed()

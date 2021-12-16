@@ -12,7 +12,7 @@ export default class VotePackManager {
 
     public getAllVotePacksByUserId(id: string): Map<number, number> {
         if (this._votePacks.has(id)) return this._votePacks.get(id);
-        else return null;
+        else return new Map<number, number>();
     }
 
     public getVotePacksByUserId(id: string, votePackId: number): number {
